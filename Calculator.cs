@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _2DFEM
 {
@@ -22,7 +18,7 @@ namespace _2DFEM
             }
         }
 
-        public static CGResult SolveByCG(SparseMatrix A, Vector F, double e)
+        public static CGResult Solve(SparseMatrix A, Vector F, double e)
         {
             int M = F.length;
 
@@ -61,8 +57,7 @@ namespace _2DFEM
         {
             if (nodes.Length != 3)
                 throw new ArgumentException();
-
-
+            
             // Gaussion quadrature coefficents
             double[] w = { 0.225,
                            0.125939180544827152595683945500181333657639231912257007644510,

@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace _2DFEM
 {
     class Program
     {
+        private static Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
+
         private static void Main(string[] args)
         {
-            TimeSpan initTime, calcTime, solveTime, totalTime;
-            Stopwatch stopWatch = new Stopwatch();
-            stopWatch.Start();
-            
-            //
-            // khoi tao
-            //
+            // initialize
+
+            StartMeasuringTask("Total");
+            StartMeasuringTask("Initialization");
 
             Mesh mesh = new Mesh();
             
@@ -34,16 +30,15 @@ namespace _2DFEM
                 cg[i] = Input.G(boundaryNodes[i].Position);
             Vector Cg = new Vector(cg);
             
-            initTime = stopWatch.Elapsed;
             Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
             Console.WriteLine("Number of interior vertices: {0}", interiorNodes.Length);
             Console.WriteLine("Number of boundary vertices: {0}", boundaryNodes.Length);
             Console.WriteLine("Number of finite elements: {0}", finiteElements.Length);
-            Console.WriteLine("Initialization time: {0:F3} sec", initTime.TotalSeconds);
+            StopAndShowTaskTime("Initialization");
 
-            //
-            // tich luy tren tung phan tu huu han
-            //
+            // calculate matrix and RHS
+
+            StartMeasuringTask("Matrix & RHS calculation");
 
             double[] f = new double[interiorNodes.Length];
             foreach (FiniteElement fe in finiteElements)
@@ -73,23 +68,21 @@ namespace _2DFEM
 
             Vector F = new Vector(f);
 
-            calcTime = stopWatch.Elapsed - initTime;
-            Console.WriteLine("Matrix & RHS calculation time: {0:F3} sec", calcTime.TotalSeconds);
+            StopAndShowTaskTime("Matrix & RHS calculation");
 
-            // giai he
+            // solve
 
-            Calculator.CGResult result = Calculator.SolveByCG(A, F - Ag * Cg, Input.e);
+            StartMeasuringTask("Matrix solution");
+
+            Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, Input.e);
             Vector C = result.vector;
-
-            solveTime = stopWatch.Elapsed - calcTime;
+            
             Console.WriteLine("CG completed successfully: {0} iterations. Residual: {1:0.###e+00}",
                                                                     result.iterations, result.error);
-            Console.WriteLine("Matrix solution time: {0:F3} sec", solveTime.TotalSeconds);
+            StopAndShowTaskTime("Matrix solution");
             
 
-            //
-            // display error
-            //
+            // output error
             
             Func<Vector2, double> Uh = (v) =>
                 {
@@ -119,13 +112,29 @@ namespace _2DFEM
             foreach (FiniteElement fe in finiteElements)
                 squareError += fe.GetLocalSquareError(C, Cg);
 
-            totalTime = stopWatch.Elapsed;
-            stopWatch.Stop();
             Console.WriteLine("L2 error in domain: {0}", Math.Sqrt(squareError));
-            Console.WriteLine("Total time: {0:0.000} sec", totalTime.TotalSeconds);
-            Console.WriteLine("Press any key to continue...");
 
+            StopAndShowTaskTime("Total");
+
+            Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
+        }
+
+        private static void StartMeasuringTask(string taskName)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            taskTimers.Add(taskName, stopwatch);
+        }
+
+        private static void StopAndShowTaskTime(string taskName)
+        {
+            Stopwatch stopwatch = taskTimers[taskName];
+            stopwatch.Stop();
+            taskTimers.Remove(taskName);
+
+            TimeSpan taskTime = stopwatch.Elapsed;
+            Console.WriteLine(taskName + " time: {0:F3} sec", taskTime.TotalSeconds);
         }
     }
 }

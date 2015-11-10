@@ -8,7 +8,7 @@ namespace _2DFEM
             a = 0, b = 1, c = 0, d = 1,
             a0 = 1;
 
-        public static readonly int n = 63, m = 63;
+        public static readonly int n = 127, m = 127;
 
         public static double F(Vector2 v)
         {

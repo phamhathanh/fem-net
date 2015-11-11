@@ -1,10 +1,44 @@
-﻿namespace _2DFEM
+﻿using System.Collections.Generic;
+
+namespace _2DFEM
 {
     class Mesh
     {
         private readonly Node[] nodes, interiorNodes, boundaryNodes;
         private readonly FiniteElement[] finiteElements;
         
+        public int NodesCount
+        {
+            get
+            {
+                return nodes.Length;
+            }
+        }
+
+        public int InteriorNodesCount
+        {
+            get
+            {
+                return interiorNodes.Length;
+            }
+        }
+
+        public int BoundaryNodesCount
+        {
+            get
+            {
+                return boundaryNodes.Length;
+            }
+        }
+
+        public int FiniteElementsCount
+        {
+            get
+            {
+                return finiteElements.Length;
+            }
+        }
+
         public Mesh()
         {
             int n = Input.n,
@@ -24,20 +58,22 @@
                 for (int i = 0; i < n + 2; i++)
                 {
                     Node node;
-                    if (j != 0 && j != m + 1 && i != 0 && i != n + 1)
+                    Vector2 nodePosition = new Vector2(a + i * h, c + j * k);
+                    bool nodeIsInside = j != 0 && j != m + 1 && i != 0 && i != n + 1;
+                    if (nodeIsInside)
                     {
-                        node = new Node(new Vector2(a + i * h, c + j * k), interiorNodesCount, true);
-                        nodes[j * (n + 2) + i] = node;
-                        interiorNodes[(j - 1) * n + (i - 1)] = node;
+                        node = new Node(nodePosition, interiorNodesCount, true);
+                        interiorNodes[interiorNodesCount] = node;
                         interiorNodesCount++;
                     }
                     else
                     {
-                        node = new Node(new Vector2(a + i * h, c + j * k), boundaryNodesCount, false);
-                        nodes[j * (n + 2) + i] = node;
+                        node = new Node(nodePosition, boundaryNodesCount, false);
                         boundaryNodes[boundaryNodesCount] = node;
                         boundaryNodesCount++;
                     }
+                    int nodeIndex = j * (n + 2) + i;
+                    nodes[nodeIndex] = node;
                 }
 
 
@@ -46,10 +82,13 @@
             for (int j = 0; j < m + 1; j++)
                 for (int i = 0; i < n + 1; i++)
                 {
-                    finiteElements[(j * (n + 1) + i) * 2] =
-                        new FiniteElement(nodes[j * (n + 2) + i], nodes[(j + 1) * (n + 2) + i + 1], nodes[(j + 1) * (n + 2) + i]);
-                    finiteElements[(j * (n + 1) + i) * 2 + 1] =
-                        new FiniteElement(nodes[j * (n + 2) + i + 1], nodes[j * (n + 2) + i], nodes[(j + 1) * (n + 2) + i + 1]);
+                    int leftLower = j * (n + 2) + i,
+                        leftUpper = (j + 1) * (n + 2) + i,
+                        rightLower = j * (n + 2) + i + 1,
+                        rightUpper = (j + 1) * (n + 2) + i + 1,
+                        index = (j * (n + 1) + i) * 2;
+                    finiteElements[index] = new FiniteElement(nodes[leftLower], nodes[rightUpper], nodes[leftUpper]);
+                    finiteElements[index + 1] = new FiniteElement(nodes[rightLower], nodes[leftLower], nodes[rightUpper]);
                 }
         }
 
@@ -80,13 +119,10 @@
             return output;
         }
 
-        public FiniteElement[] GetFiniteElements()
+        public IEnumerable<FiniteElement> GetFiniteElements()
         {
-            FiniteElement[] output = new FiniteElement[finiteElements.Length];
-            for (int i = 0; i < finiteElements.Length; i++)
-                output[i] = finiteElements[i];
-
-            return output;
+            foreach (var finiteElement in finiteElements)
+                yield return finiteElement;
         }
     }
 }

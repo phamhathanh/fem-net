@@ -10,37 +10,35 @@ namespace _2DFEM
 
         private static void Main(string[] args)
         {
+            Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
+
             // initialize
 
-            StartMeasuringTask("Total");
-            StartMeasuringTask("Initialization");
+            StartMeasuringTaskTime("Total");
+            StartMeasuringTaskTime("Initialization");
 
             Mesh mesh = new Mesh();
             
-            Node[] nodes = mesh.GetNodes(),
-                    interiorNodes = mesh.GetInteriorNodes(),
-                    boundaryNodes = mesh.GetBoundaryNodes();
-            FiniteElement[] finiteElements = mesh.GetFiniteElements();
+            Node[] boundaryNodes = mesh.GetBoundaryNodes();
+            IEnumerable<FiniteElement> finiteElements = mesh.GetFiniteElements();
             
-            SparseMatrix A = new SparseMatrix(interiorNodes.Length, interiorNodes.Length);
-            SparseMatrix Ag = new SparseMatrix(interiorNodes.Length, boundaryNodes.Length);
+            Matrix A = new Matrix(mesh.InteriorNodesCount, mesh.InteriorNodesCount);
+            Matrix Ag = new Matrix(mesh.InteriorNodesCount, mesh.BoundaryNodesCount);
 
             double[] cg = new double[boundaryNodes.Length];
             for (int i = 0; i < boundaryNodes.Length; i++)
                 cg[i] = Input.G(boundaryNodes[i].Position);
             Vector Cg = new Vector(cg);
             
-            Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
-            Console.WriteLine("Number of interior vertices: {0}", interiorNodes.Length);
-            Console.WriteLine("Number of boundary vertices: {0}", boundaryNodes.Length);
-            Console.WriteLine("Number of finite elements: {0}", finiteElements.Length);
+            ShowMeshParameters(mesh);
             StopAndShowTaskTime("Initialization");
 
             // calculate matrix and RHS
 
-            StartMeasuringTask("Matrix & RHS calculation");
+            StartMeasuringTaskTime("Matrix & RHS calculation");
 
-            double[] f = new double[interiorNodes.Length];
+            double[] rhs = new double[mesh.InteriorNodesCount];
+
             foreach (FiniteElement fe in finiteElements)
                 for (int i = 0; i < 3; i++)
                     if (fe.nodes[i].IsInside)
@@ -50,10 +48,10 @@ namespace _2DFEM
                             if (fe.nodes[j].IsInside)
                             {
                                 int J = fe.nodes[j].Index;
-                                A[I, J] += fe.GetLocalA(i, j);
+                                A[I, J] += fe.GetLocalStiffness(i, j) + fe.GetLocalMass(i, j);
                             }
 
-                        f[I] += fe.GetLocalF(i);
+                        rhs[I] += fe.GetLocalRHS(i);
                     }
                     else
                     {
@@ -62,17 +60,17 @@ namespace _2DFEM
                             if (fe.nodes[j].IsInside)
                             {
                                 int I = fe.nodes[j].Index;
-                                Ag[I, J] += fe.GetLocalA(i, j);
+                                Ag[I, J] += fe.GetLocalStiffness(i, j) + fe.GetLocalMass(i, j);
                             }
                     }
 
-            Vector F = new Vector(f);
+            Vector F = new Vector(rhs);
 
             StopAndShowTaskTime("Matrix & RHS calculation");
 
             // solve
 
-            StartMeasuringTask("Matrix solution");
+            StartMeasuringTaskTime("Matrix solution");
 
             Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, Input.e);
             Vector C = result.vector;
@@ -83,30 +81,19 @@ namespace _2DFEM
             
 
             // output error
-            
-            Func<Vector2, double> Uh = (v) =>
+
+            Vector2 point = new Vector2(0.40594, 0.52323);
+            double exactSolution = Input.U(point),
+                   approxSolution = 0;
+
+            foreach (FiniteElement fe in finiteElements)
+                if (fe.Contains(point))
                 {
-                    double output = 0;
-                    foreach (FiniteElement fe in finiteElements)
-                        if (fe.Contains(v))
-                        {
-                            for (int i = 0; i < 3; i++)
-                                if (fe.nodes[i].IsInside)
-                                    output += fe.Phi(v, i) * C[fe.nodes[i].Index];
-                                else
-                                    output += fe.Phi(v, i) * Cg[fe.nodes[i].Index];
-                            break;
-                        }
-                    return output;
-                };
+                    approxSolution = fe.GetSolutionAtPoint(C, Cg, point);
+                    break;
+                }
 
-            Vector2 v0 = new Vector2(0.40594, 0.52323);
-            double U0 = Input.U(v0),
-                   Uh0 = Uh(v0);
-
-            Console.WriteLine("Exact solution at  {0}: {1}", v0, U0);
-            Console.WriteLine("Approx solution at {0}: {1}", v0, Uh0);
-            Console.WriteLine("The error at point {0}: {1}", v0, Uh0 - U0);
+            ShowPointError(point, exactSolution, approxSolution);
 
             double squareError = 0;
             foreach (FiniteElement fe in finiteElements)
@@ -116,11 +103,10 @@ namespace _2DFEM
 
             StopAndShowTaskTime("Total");
 
-            Console.WriteLine("Press any key to continue...");
-            Console.ReadKey(true);
+            Console.ReadLine();
         }
 
-        private static void StartMeasuringTask(string taskName)
+        private static void StartMeasuringTaskTime(string taskName)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -135,6 +121,20 @@ namespace _2DFEM
 
             TimeSpan taskTime = stopwatch.Elapsed;
             Console.WriteLine(taskName + " time: {0:F3} sec", taskTime.TotalSeconds);
+        }
+
+        private static void ShowMeshParameters(Mesh mesh)
+        {
+            Console.WriteLine("Number of interior vertices: {0}", mesh.InteriorNodesCount);
+            Console.WriteLine("Number of boundary vertices: {0}", mesh.BoundaryNodesCount);
+            Console.WriteLine("Number of finite elements: {0}", mesh.FiniteElementsCount);
+        }
+
+        private static void ShowPointError(Vector2 point, double exact, double approx)
+        {
+            Console.WriteLine("Exact solution at  {0}: {1}", point, exact);
+            Console.WriteLine("Approx solution at {0}: {1}", point, approx);
+            Console.WriteLine("The error at point {0}: {1}", point, approx - exact);
         }
     }
 }

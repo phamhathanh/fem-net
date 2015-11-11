@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace _2DFEM
 {
-    struct SparseMatrix
+    struct Matrix
     {
         private readonly int rowsCount, colsCount;          // doesnt actually do anything
         private Dictionary<int, Dictionary<int, double>> _rows;
 
-        public SparseMatrix(int rowsCount, int colsCount)
+        public Matrix(int rowsCount, int colsCount)
         {
             _rows = new Dictionary<int, Dictionary<int, double>>();
             this.rowsCount = rowsCount;
@@ -134,7 +134,7 @@ namespace _2DFEM
             return result;
         }
         
-        public static Vector operator *(SparseMatrix m, Vector v)
+        public static Vector operator *(Matrix m, Vector v)
         {
             if (v.length != m.ColsCount)
                 throw new ArgumentException("Matrix and vector size must match.");

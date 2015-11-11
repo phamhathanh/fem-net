@@ -8,7 +8,7 @@ namespace _2DFEM
             a = 0, b = 1, c = 0, d = 1,
             a0 = 1;
 
-        public static readonly int n = 127, m = 127;
+        public static readonly int n = 127, m = n;
 
         public static double F(Vector2 v)
         {
@@ -30,7 +30,7 @@ namespace _2DFEM
             double x = v.x,
                    y = v.y;
 
-            return 1 / (x + y + 1) + Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + 5;
+            return 1 / (x + y + 1) + Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + 99;
             return x*x*x*x;
             return x*(x - 1)*y*(y - 1) + 1;
         }

@@ -18,7 +18,7 @@ namespace _2DFEM
             }
         }
 
-        public static CGResult Solve(SparseMatrix A, Vector F, double e)
+        public static CGResult Solve(Matrix A, Vector F, double e)
         {
             int M = F.length;
 

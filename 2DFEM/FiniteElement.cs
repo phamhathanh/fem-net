@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace _2DFEM
 {
@@ -19,8 +20,9 @@ namespace _2DFEM
         public readonly Node[] nodes;
         // cancer
 
-        private readonly double[] localF;
-        private readonly double[,] localA;
+        private readonly double[] localRHS;
+        private readonly double[,] localStiffness;
+        private readonly double[,] localMass;
 
         public FiniteElement(Node node1, Node node2, Node node3)
         {
@@ -39,19 +41,23 @@ namespace _2DFEM
 
             double area = Math.Abs(u1.x * u2.y - u1.y * u2.x) / 2;
 
-            this.localF = new double[3];
-            this.localA = new double[3, 3];
+            this.localRHS = new double[3];
+            this.localStiffness = new double[3, 3];
+            this.localMass = new double[3, 3];
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
-                    localA[i, j] = (Vector2.Dot(gradPhi[i], gradPhi[j]) + Input.a0 * m0[i, j] * 2) * area;
+                {
+                    localStiffness[i, j] = Vector2.Dot(gradPhi[i], gradPhi[j]) * area;
+                    localMass[i, j] = Input.a0 * m0[i, j] * 2 * area;
+                }
 
                 if (nodes[i].IsInside)
-                    localF[i] = Calculator.Integrate((v) => Input.F(v) * Phi(v, i), nodes);
+                    localRHS[i] = Calculator.Integrate((v) => Input.F(v) * Phi(v, i), nodes);
             }
         }
-        
-        public double Phi(Vector2 v, int nodeIndex)
+
+        private double Phi(Vector2 v, int nodeIndex)
         {
             Node node1 = nodes[nodeIndex],
                  node2 = nodes[(nodeIndex + 1) % 3],
@@ -60,27 +66,34 @@ namespace _2DFEM
             return node1.Phi(node2, node3, v);
         }
 
-        public double GetLocalF(int nodeIndex)
+        public double GetLocalStiffness(int nodeIndex1, int nodeIndex2)
         {
-            return localF[nodeIndex];
+            return localStiffness[nodeIndex1, nodeIndex2];
         }
 
-        public double GetLocalA(int nodeIndex1, int nodeIndex2)
+        public double GetLocalMass(int nodeIndex1, int nodeIndex2)
         {
-            return localA[nodeIndex1, nodeIndex2];
+            return localMass[nodeIndex1, nodeIndex2];
         }
 
-        public bool Contains(Vector2 v)
+        public double GetLocalRHS(int nodeIndex)
         {
-            Vector2 p0 = nodes[0].Position,
-                    p1 = nodes[1].Position,
-                    p2 = nodes[2].Position;
+            return localRHS[nodeIndex];
+        }
 
-            double signedArea = (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y),
-                s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * v.x + (p0.x - p2.x) * v.y) / (2 * signedArea),
-                t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * v.x + (p1.x - p0.x) * v.y) / (2 * signedArea);
+        public double GetSolutionAtPoint(Vector C, Vector Cg, Vector2 v)
+        {
+            if (!this.Contains(v))
+                return 0;
 
-            return s >= 0 && t >= 0 && (s + t) <= 1;
+            double sum = 0;
+            for (int i = 0; i < 3; i++)
+                if (nodes[i].IsInside)
+                    sum += Phi(v, i) * C[nodes[i].Index];
+                else
+                    sum += Phi(v, i) * Cg[nodes[i].Index];
+
+            return sum;
         }
 
         public double GetLocalSquareError(Vector C, Vector Cg)
@@ -102,6 +115,19 @@ namespace _2DFEM
             };
 
             return Calculator.Integrate(error, nodes);
+        }
+
+        public bool Contains(Vector2 v)
+        {
+            Vector2 p0 = nodes[0].Position,
+                    p1 = nodes[1].Position,
+                    p2 = nodes[2].Position;
+
+            double signedArea = (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y),
+                s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * v.x + (p0.x - p2.x) * v.y) / (2 * signedArea),
+                t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * v.x + (p1.x - p0.x) * v.y) / (2 * signedArea);
+
+            return s >= 0 && t >= 0 && (s + t) <= 1;
         }
     }
 }

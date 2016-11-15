@@ -17,17 +17,23 @@ namespace _2DFEM
             StartMeasuringTaskTime("Total");
             StartMeasuringTaskTime("Initialization");
 
-            Mesh mesh = new Mesh();
+            var mesh = new Mesh();
             
-            Node[] boundaryNodes = mesh.GetBoundaryNodes();
-            IEnumerable<FiniteElement> finiteElements = mesh.GetFiniteElements();
+            var boundaryNodes = mesh.GetBoundaryNodes();
+            var finiteElements = mesh.GetFiniteElements();
             
             Matrix A = new Matrix(mesh.InteriorNodesCount, mesh.InteriorNodesCount);
             Matrix Ag = new Matrix(mesh.InteriorNodesCount, mesh.BoundaryNodesCount);
 
-            double[] cg = new double[boundaryNodes.Length];
-            for (int i = 0; i < boundaryNodes.Length; i++)
-                cg[i] = Input.G(boundaryNodes[i].Position);
+            double[] cg = new double[mesh.BoundaryNodesCount];
+            {
+                int i = 0;
+                foreach (var boundaryNode in boundaryNodes)
+                {
+                    cg[i] = Input.G(boundaryNode.Position);
+                    i++;
+                }
+            }
             Vector Cg = new Vector(cg);
             
             ShowMeshParameters(mesh);
@@ -82,7 +88,7 @@ namespace _2DFEM
 
             // output error
 
-            Vector2 point = new Vector2(0.40594, 0.52323);
+            var point = new Vector2(0.40594, 0.52323);
             double exactSolution = Input.U(point),
                    approxSolution = 0;
 

@@ -7,37 +7,13 @@ namespace _2DFEM
         private readonly Node[] nodes, interiorNodes, boundaryNodes;
         private readonly FiniteElement[] finiteElements;
         
-        public int NodesCount
-        {
-            get
-            {
-                return nodes.Length;
-            }
-        }
+        public int NodesCount => nodes.Length;
 
-        public int InteriorNodesCount
-        {
-            get
-            {
-                return interiorNodes.Length;
-            }
-        }
+        public int InteriorNodesCount => interiorNodes.Length;
 
-        public int BoundaryNodesCount
-        {
-            get
-            {
-                return boundaryNodes.Length;
-            }
-        }
+        public int BoundaryNodesCount => boundaryNodes.Length;
 
-        public int FiniteElementsCount
-        {
-            get
-            {
-                return finiteElements.Length;
-            }
-        }
+        public int FiniteElementsCount => finiteElements.Length;
 
         public Mesh()
         {
@@ -92,31 +68,22 @@ namespace _2DFEM
                 }
         }
 
-        public Node[] GetNodes()
+        public IEnumerable<Node> GetNodes()
         {
-            Node[] output = new Node[nodes.Length];
-            for (int i = 0; i < nodes.Length; i++)
-                output[i] = nodes[i];
-
-            return output;
+            foreach (var node in nodes)
+                yield return node;
         }
 
-        public Node[] GetInteriorNodes()
+        public IEnumerable<Node> GetInteriorNodes()
         {
-            Node[] output = new Node[interiorNodes.Length];
-            for (int i = 0; i < interiorNodes.Length; i++)
-                output[i] = interiorNodes[i];
-
-            return output;
+            foreach (var node in interiorNodes)
+                yield return node;
         }
 
-        public Node[] GetBoundaryNodes()
+        public IEnumerable<Node> GetBoundaryNodes()
         {
-            Node[] output = new Node[boundaryNodes.Length];
-            for (int i = 0; i < boundaryNodes.Length; i++)
-                output[i] = boundaryNodes[i];
-
-            return output;
+            foreach (var node in boundaryNodes)
+                yield return node;
         }
 
         public IEnumerable<FiniteElement> GetFiniteElements()

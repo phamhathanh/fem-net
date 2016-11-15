@@ -1,20 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace _2DFEM
 {
     class FiniteElement
     {
         // precalculated value of local mass matrix, to be replaced
-        private static double[,] m0 = {{0.083333333333333333333333333333333333333333333333333333333333,
-                                      0.041666666666666666666666666666666666666666666666666666666666,
-                                      0.041666666666666666666666666666666666666666666666666666666666},
-                                      {0.041666666666666666666666666666666666666666666666666666666666,
-                                      0.083333333333333333333333333333333333333333333333333333333333,
-                                      0.041666666666666666666666666666666666666666666666666666666666},
-                                      {0.041666666666666666666666666666666666666666666666666666666666,
-                                      0.041666666666666666666666666666666666666666666666666666666666,
-                                      0.083333333333333333333333333333333333333333333333333333333333}};
+        private static readonly double[,] m0 =
+            {{0.083333333333333333333333333333333333333333333333333333333333,
+            0.041666666666666666666666666666666666666666666666666666666666,
+            0.041666666666666666666666666666666666666666666666666666666666},
+            {0.041666666666666666666666666666666666666666666666666666666666,
+            0.083333333333333333333333333333333333333333333333333333333333,
+            0.041666666666666666666666666666666666666666666666666666666666},
+            {0.041666666666666666666666666666666666666666666666666666666666,
+            0.041666666666666666666666666666666666666666666666666666666666,
+            0.083333333333333333333333333333333333333333333333333333333333}};
 
         // cancer
         public readonly Node[] nodes;
@@ -67,19 +67,13 @@ namespace _2DFEM
         }
 
         public double GetLocalStiffness(int nodeIndex1, int nodeIndex2)
-        {
-            return localStiffness[nodeIndex1, nodeIndex2];
-        }
+            => localStiffness[nodeIndex1, nodeIndex2];
 
         public double GetLocalMass(int nodeIndex1, int nodeIndex2)
-        {
-            return localMass[nodeIndex1, nodeIndex2];
-        }
+            => localMass[nodeIndex1, nodeIndex2];
 
         public double GetLocalRHS(int nodeIndex)
-        {
-            return localRHS[nodeIndex];
-        }
+            => localRHS[nodeIndex];
 
         public double GetSolutionAtPoint(Vector C, Vector Cg, Vector2 v)
         {

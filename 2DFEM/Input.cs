@@ -4,8 +4,7 @@ namespace _2DFEM
 {
     static class Input
     {
-        public static readonly double e = 1e-12,
-            a0 = 1;
+        public static readonly double a0 = 1;
 
         public static readonly int n = 127, m = n;
 

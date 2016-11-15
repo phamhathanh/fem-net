@@ -79,7 +79,8 @@ namespace _2DFEM
 
             StartMeasuringTaskTime("Matrix solution");
 
-            Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, Input.e);
+            var epsilon = 1e-12;
+            Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, epsilon);
             Vector C = result.vector;
             
             Console.WriteLine("CG completed successfully: {0} iterations. Residual: {1:0.###e+00}",

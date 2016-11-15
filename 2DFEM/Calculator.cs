@@ -18,7 +18,7 @@ namespace _2DFEM
             }
         }
 
-        public static CGResult Solve(Matrix A, Vector F, double e)
+        public static CGResult Solve(Matrix A, Vector F, double epsilon)
         {
             int M = F.length;
 
@@ -40,7 +40,7 @@ namespace _2DFEM
                 oldRho = newRho;
                 newRho = Vector.Dot(r, r);
 
-                if (newRho < e * rho0)
+                if (newRho < epsilon * rho0)
                 {
                     iterations = i + 1;
                     break;

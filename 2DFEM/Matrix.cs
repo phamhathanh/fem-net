@@ -136,7 +136,7 @@ namespace _2DFEM
         
         public static Vector operator *(Matrix m, Vector v)
         {
-            if (v.length != m.ColsCount)
+            if (v.Length != m.ColsCount)
                 throw new ArgumentException("Matrix and vector size must match.");
 
             int length = m.RowsCount;

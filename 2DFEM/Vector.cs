@@ -2,45 +2,42 @@
 
 namespace _2DFEM
 {
-    struct Vector
+    class Vector
     {
-        public readonly int length;
         private readonly double[] items;
+        private double? norm;
 
-        public double Norm
-        {
-            get
-            {
-                double squareNorm = 0;
-                for (int i = 0; i < length; i++)
-                    squareNorm += this[i] * this[i];
+        public int Length { get; }
+        public double Norm => GetNorm();
 
-                return Math.Sqrt(squareNorm);
-            }
-        }
-
-        public double this[int i]
-        {
-            get
-            {
-                return items[i];
-            }
-        }
+        public double this[int i] => items[i];
 
         public Vector(double[] doubleArray)
         {
-            this.length = doubleArray.Length;
-
-            this.items = new double[length];
-
-            for (int i = 0; i < length; i++)
+            this.Length = doubleArray.Length;
+            this.items = new double[Length];
+            for (int i = 0; i < Length; i++)
                 items[i] = doubleArray[i];
+
+            this.norm = null;
+        }
+
+        private double GetNorm()
+        {
+            if (!norm.HasValue)
+            {
+                double squareNorm = 0;
+                foreach (var item in items)
+                    squareNorm += item * item;
+                norm =  Math.Sqrt(squareNorm);
+            }
+            return norm.Value;
         }
 
         public static Vector operator +(Vector v1, Vector v2)
         {
-            int length = v1.length;
-            if (v2.length != length)
+            int length = v1.Length;
+            if (v2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double[] output = new double[length];
@@ -52,8 +49,8 @@ namespace _2DFEM
 
         public static Vector operator -(Vector v1, Vector v2)
         {
-            int length = v1.length;
-            if (v2.length != length)
+            int length = v1.Length;
+            if (v2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double[] output = new double[length];
@@ -65,7 +62,7 @@ namespace _2DFEM
 
         public static Vector operator *(double d, Vector v)
         {
-            int length = v.length;
+            int length = v.Length;
 
             double[] output = new double[length];
             for (int i = 0; i < length; i++)
@@ -76,8 +73,8 @@ namespace _2DFEM
 
         public static double Dot(Vector v1, Vector v2)
         {
-            int length = v1.length;
-            if (v2.length != length)
+            int length = v1.Length;
+            if (v2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double output = 0;

@@ -20,7 +20,7 @@ namespace _2DFEM
 
         public static CGResult Solve(Matrix A, Vector F, double epsilon)
         {
-            int M = F.length;
+            int M = F.Length;
 
             Vector r, u, p, s;
             double alpha, rho0, oldRho, newRho;

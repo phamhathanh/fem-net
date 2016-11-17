@@ -21,12 +21,11 @@ namespace _2DFEM
             var rectangle = new Rectangle(0, 1, 0, 1);
             var mesh = new Mesh(127, 127, rectangle);
 
-            var interiorNodesCount = mesh.InteriorNodes.Count();
-            var boundaryNodesCount = mesh.BoundaryNodes.Count();
-            Matrix A = new Matrix(interiorNodesCount, interiorNodesCount);
-            Matrix Ag = new Matrix(interiorNodesCount, boundaryNodesCount);
+            Matrix A = new Matrix(mesh.InteriorNodes.Count, mesh.InteriorNodes.Count);
+            Matrix Ag = new Matrix(mesh.InteriorNodes.Count, mesh.BoundaryNodes.Count);
 
-            double[] cg = new double[boundaryNodesCount];
+            double[] cg = new double[mesh.BoundaryNodes.Count];
+
             {
                 int i = 0;
                 foreach (var boundaryNode in mesh.BoundaryNodes)
@@ -44,7 +43,7 @@ namespace _2DFEM
 
             StartMeasuringTaskTime("Matrix & RHS calculation");
 
-            double[] rhs = new double[interiorNodesCount];
+            double[] rhs = new double[mesh.InteriorNodes.Count];
 
             foreach (var finiteElement in mesh.FiniteElements)
                 for (int i = 0; i < 3; i++)
@@ -83,8 +82,7 @@ namespace _2DFEM
             Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, epsilon);
             Vector C = result.vector;
             
-            Console.WriteLine("CG completed successfully: {0} iterations. Residual: {1:0.###e+00}",
-                                                                    result.iterations, result.error);
+            Console.WriteLine($"CG completed successfully: {result.iterations} iterations. Residual: {result.error:0.###e+00}");
             StopAndShowTaskTime("Matrix solution");
             
 
@@ -107,7 +105,7 @@ namespace _2DFEM
             foreach (var finiteElement in mesh.FiniteElements)
                 squareError += finiteElement.GetLocalSquareError(C, Cg);
 
-            Console.WriteLine("L2 error in domain: {0}", Math.Sqrt(squareError));
+            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
 
             StopAndShowTaskTime("Total");
 
@@ -128,21 +126,21 @@ namespace _2DFEM
             taskTimers.Remove(taskName);
 
             TimeSpan taskTime = stopwatch.Elapsed;
-            Console.WriteLine(taskName + " time: {0:F3} sec", taskTime.TotalSeconds);
+            Console.WriteLine($"{taskName} time: {taskTime.TotalSeconds:F3} sec");
         }
 
         private static void ShowMeshParameters(Mesh mesh)
         {
-            Console.WriteLine("Number of interior vertices: {0}", mesh.InteriorNodes.Count());
-            Console.WriteLine("Number of boundary vertices: {0}", mesh.BoundaryNodes.Count());
-            Console.WriteLine("Number of finite elements: {0}", mesh.FiniteElements.Count());
+            Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count()}");
+            Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count()}");
+            Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count()}");
         }
 
         private static void ShowPointError(Vector2 point, double exact, double approx)
         {
-            Console.WriteLine("Exact solution at  {0}: {1}", point, exact);
-            Console.WriteLine("Approx solution at {0}: {1}", point, approx);
-            Console.WriteLine("The error at point {0}: {1}", point, approx - exact);
+            Console.WriteLine($"Exact solution at  {point}: {exact}");
+            Console.WriteLine($"Approx solution at {point}: {approx}");
+            Console.WriteLine($"The error at point {point}: {approx - exact}");
         }
     }
 }

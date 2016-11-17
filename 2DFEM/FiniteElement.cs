@@ -24,6 +24,8 @@ namespace _2DFEM
         private readonly double[,] localStiffness;
         private readonly double[,] localMass;
 
+        private readonly Func<Vector2, double> basisFunction0, basisFunction1, basisFunction2;
+
         public FiniteElement(Node node1, Node node2, Node node3)
         {
             this.nodes = new Node[] { node1, node2, node3 };
@@ -41,6 +43,11 @@ namespace _2DFEM
 
             double area = Math.Abs(u1.x * u2.y - u1.y * u2.x) / 2;
 
+            basisFunction0 = CreateBasisFunction(node1, node2, node3);
+            basisFunction1 = CreateBasisFunction(node2, node3, node1);
+            basisFunction2 = CreateBasisFunction(node3, node1, node2);
+            var basisFunctions = new[] { basisFunction0, basisFunction1, basisFunction2 };
+
             this.localRHS = new double[3];
             this.localStiffness = new double[3, 3];
             this.localMass = new double[3, 3];
@@ -53,17 +60,22 @@ namespace _2DFEM
                 }
 
                 if (nodes[i].IsInside)
-                    localRHS[i] = Calculator.Integrate((v) => Input.F(v) * Phi(v, i), nodes);
+                    localRHS[i] = Calculator.Integrate((v) => Input.F(v) * basisFunctions[i](v), nodes);
             }
         }
 
-        private double Phi(Vector2 v, int nodeIndex)
+        private Func<Vector2, double> CreateBasisFunction(Node thisNode, Node thatNode, Node thatOtherNode)
         {
-            Node node1 = nodes[nodeIndex],
-                 node2 = nodes[(nodeIndex + 1) % 3],
-                 node3 = nodes[(nodeIndex + 2) % 3];
+            double x1 = thisNode.Position.x,
+                   y1 = thisNode.Position.y,
+                   x2 = thatNode.Position.x,
+                   y2 = thatNode.Position.y,
+                   x3 = thatOtherNode.Position.x,
+                   y3 = thatOtherNode.Position.y;
 
-            return node1.Phi(node2, node3, v);
+            // Linear interpolation.
+            return point => ((y3 - y2) * point.x + (x2 - x3) * point.y + y2 * x3 - x2 * y3)
+                    / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2);
         }
 
         public double GetLocalStiffness(int nodeIndex1, int nodeIndex2)
@@ -72,6 +84,8 @@ namespace _2DFEM
         public double GetLocalMass(int nodeIndex1, int nodeIndex2)
             => localMass[nodeIndex1, nodeIndex2];
 
+
+        // TODO: Abstractize this.
         public double GetLocalRHS(int nodeIndex)
             => localRHS[nodeIndex];
 
@@ -80,19 +94,33 @@ namespace _2DFEM
             if (!this.Contains(v))
                 return 0;
 
+            var basisFunctions = new[] { basisFunction0, basisFunction1, basisFunction2 };
             double sum = 0;
             for (int i = 0; i < 3; i++)
                 if (nodes[i].IsInside)
-                    sum += Phi(v, i) * C[nodes[i].Index];
+                    sum += basisFunctions[i](v) * C[nodes[i].Index];
                 else
-                    sum += Phi(v, i) * Cg[nodes[i].Index];
+                    sum += basisFunctions[i](v) * Cg[nodes[i].Index];
 
+            return sum;
+        }
+
+        public double GetValueOfFunctionAtPoint(Vector coefficients, Vector2 point)
+        {
+            if (!this.Contains(point))
+                throw new ArgumentException();
+
+            double sum = 0;
+            sum += basisFunction0(point) * coefficients[nodes[0].Index];
+            sum += basisFunction1(point) * coefficients[nodes[1].Index];
+            sum += basisFunction2(point) * coefficients[nodes[2].Index];
             return sum;
         }
 
         public double GetLocalSquareError(Vector C, Vector Cg)
         {
-            Func<Vector2, double> error = (v) =>
+            var basisFunctions = new[] { basisFunction0, basisFunction1, basisFunction2 };
+            Func<Vector2, double> error = v =>
             {
                 double u0 = Input.U(v),
                        uh0 = 0;
@@ -101,9 +129,9 @@ namespace _2DFEM
                 {
                     Node node = nodes[i];
                     if (node.IsInside)
-                        uh0 += Phi(v, i) * C[node.Index];
+                        uh0 += basisFunctions[i](v) * C[node.Index];
                     else
-                        uh0 += Phi(v, i) * Cg[node.Index];
+                        uh0 += basisFunctions[i](v) * Cg[node.Index];
                 }
                 return (u0 - uh0) * (u0 - uh0);
             };

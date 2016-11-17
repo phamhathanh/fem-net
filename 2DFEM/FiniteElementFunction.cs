@@ -2,7 +2,7 @@
 
 namespace _2DFEM
 {
-    class FiniteElementFunction
+    class FiniteElementFunction : IFunction<Vector2, double>
     {
         private readonly Mesh mesh;
 
@@ -21,7 +21,7 @@ namespace _2DFEM
             // Deep enough?
         }
 
-        public double ValueAt(Vector2 point)
+        public double GetValueAt(Vector2 point)
         {
             bool pointIsInsideTheMesh = mesh.Contains(point);
             if (!pointIsInsideTheMesh)

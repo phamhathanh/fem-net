@@ -73,5 +73,13 @@ namespace _2DFEM
 
         public bool Contains(Vector2 point)
             => FiniteElements.Any(fe => fe.Contains(point));
+
+        public double Integrate(IFunction<Vector2, double> function)
+        {
+            double output = 0;
+            foreach (var finiteElement in FiniteElements)
+                output += finiteElement.Integrate(function);
+            return output;
+        }
     }
 }

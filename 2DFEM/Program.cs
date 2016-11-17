@@ -44,6 +44,7 @@ namespace _2DFEM
             StartMeasuringTaskTime("Matrix & RHS calculation");
 
             double[] rhs = new double[mesh.InteriorNodes.Count];
+            //rhs = mesh.Integrate(new Function());
 
             foreach (var finiteElement in mesh.FiniteElements)
                 for (int i = 0; i < 3; i++)

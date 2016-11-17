@@ -4,18 +4,6 @@ namespace _2DFEM
 {
     class FiniteElement
     {
-        // precalculated value of local mass matrix, to be replaced
-        private static readonly double[,] m0 =
-            {{0.083333333333333333333333333333333333333333333333333333333333,
-            0.041666666666666666666666666666666666666666666666666666666666,
-            0.041666666666666666666666666666666666666666666666666666666666},
-            {0.041666666666666666666666666666666666666666666666666666666666,
-            0.083333333333333333333333333333333333333333333333333333333333,
-            0.041666666666666666666666666666666666666666666666666666666666},
-            {0.041666666666666666666666666666666666666666666666666666666666,
-            0.041666666666666666666666666666666666666666666666666666666666,
-            0.083333333333333333333333333333333333333333333333333333333333}};
-
         // cancer
         public readonly Node[] nodes;
         // cancer
@@ -29,7 +17,7 @@ namespace _2DFEM
         public FiniteElement(Node node1, Node node2, Node node3)
         {
             this.nodes = new Node[] { node1, node2, node3 };
-            
+
             Vector2[] gradPhi = new Vector2[3];
             for (int i = 0; i < 3; i++)
             {
@@ -40,7 +28,6 @@ namespace _2DFEM
 
             Vector2 u1 = node2.Position - node1.Position,
                     u2 = node3.Position - node1.Position;
-
             double area = Math.Abs(u1.x * u2.y - u1.y * u2.x) / 2;
 
             basisFunction0 = CreateBasisFunction(node1, node2, node3);
@@ -56,11 +43,11 @@ namespace _2DFEM
                 for (int j = 0; j < 3; j++)
                 {
                     localStiffness[i, j] = Vector2.Dot(gradPhi[i], gradPhi[j]) * area;
-                    localMass[i, j] = Input.a0 * m0[i, j] * 2 * area;
+                    localMass[i, j] = Calculator.Integrate(v => Input.a0 * basisFunctions[i](v) * basisFunctions[j](v), nodes);
                 }
 
                 if (nodes[i].IsInside)
-                    localRHS[i] = Calculator.Integrate((v) => Input.F(v) * basisFunctions[i](v), nodes);
+                    localRHS[i] = Calculator.Integrate(v => Input.F(v) * basisFunctions[i](v), nodes);
             }
         }
 
@@ -77,6 +64,9 @@ namespace _2DFEM
             return point => ((y3 - y2) * point.x + (x2 - x3) * point.y + y2 * x3 - x2 * y3)
                     / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2);
         }
+
+        public double Integrate(IFunction<Vector2, double> function)
+            => Calculator.Integrate(p => function.GetValueAt(p), nodes);
 
         public double GetLocalStiffness(int nodeIndex1, int nodeIndex2)
             => localStiffness[nodeIndex1, nodeIndex2];

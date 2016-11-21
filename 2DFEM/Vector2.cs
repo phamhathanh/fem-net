@@ -2,7 +2,7 @@
 
 namespace _2DFEM
 {
-    struct Vector2
+    public struct Vector2
     {
         public readonly double x, y;
 

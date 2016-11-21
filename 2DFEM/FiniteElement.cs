@@ -18,7 +18,7 @@ namespace _2DFEM
         {
             this.nodes = new Node[] { node1, node2, node3 };
 
-            Vector2[] gradPhi = new Vector2[3];
+            var gradPhi = new Vector2[3];
             for (int i = 0; i < 3; i++)
             {
                 Node nj = nodes[(i + 1) % 3],

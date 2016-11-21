@@ -45,6 +45,7 @@
     <Compile Include="Calculator.cs" />
     <Compile Include="FiniteElement.cs" />
     <Compile Include="IFunction.cs" />
+    <Compile Include="IMesh.cs" />
     <Compile Include="Input.cs" />
     <Compile Include="LaplaceEquation.cs" />
     <Compile Include="Node.cs" />

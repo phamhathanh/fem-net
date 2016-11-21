@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace _2DFEM
 {
-    class Mesh
+    internal class Mesh : IMesh
     {
         public ReadOnlyCollection<Node> Nodes { get; }
         public ReadOnlyCollection<Node> InteriorNodes { get; }

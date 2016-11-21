@@ -50,7 +50,7 @@ namespace _2DFEM
 
                 var gradient = new Vector2((y3 - y2) / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2),
                                 (x2 - x3) / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2));
-                return v => gradient;
+                return point => gradient;
             }
         }
 
@@ -61,24 +61,8 @@ namespace _2DFEM
             var feNode0 = new Node(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
             var feNode1 = new Node(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
             var feNode2 = new Node(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
-            Nodes = new ReadOnlyCollection<Node>(new [] { feNode0, feNode1, feNode2 });
+            Nodes = new ReadOnlyCollection<Node>(new[] { feNode0, feNode1, feNode2 });
         }
-        
-        public double GetSolutionAtPoint(Vector C, Vector Cg, Vector2 v)
-        {
-            if (!this.Contains(v))
-                return 0;
-            
-            double sum = 0;
-            foreach (var node in Nodes)
-                if (node.IsInside)
-                    sum += node.Phi(v) * C[node.Index];
-                else
-                    sum += node.Phi(v) * Cg[node.Index];
-
-            return sum;
-        }
-
         public double GetValueOfFunctionAtPoint(Vector coefficients, Vector2 point)
         {
             if (!this.Contains(point))
@@ -89,24 +73,6 @@ namespace _2DFEM
                 if (node.IsInside)
                     sum += node.Phi(point) * coefficients[node.Index];
             return sum;
-        }
-
-        public double GetLocalSquareError(Vector C, Vector Cg)
-        {
-            Func<Vector2, double> error = v =>
-            {
-                double u0 = Input.U(v),
-                       uh0 = 0;
-
-                foreach (var node in Nodes)
-                    if (node.IsInside)
-                        uh0 += node.Phi(v) * C[node.Index];
-                    else
-                        uh0 += node.Phi(v) * Cg[node.Index];
-                return (u0 - uh0) * (u0 - uh0);
-            };
-
-            return Calculator.Integrate(error, this);
         }
 
         public bool Contains(Vector2 v)

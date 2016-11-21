@@ -24,6 +24,7 @@ namespace _2DFEM
 
             Matrix A = new Matrix(mesh.InteriorNodes.Count, mesh.InteriorNodes.Count);
             Matrix Ag = new Matrix(mesh.InteriorNodes.Count, mesh.BoundaryNodes.Count);
+            Matrix Bg = new Matrix(mesh.InteriorNodes.Count, mesh.BoundaryNodes.Count);
 
             double[] cg = new double[mesh.BoundaryNodes.Count];
 
@@ -36,7 +37,7 @@ namespace _2DFEM
                 }
             }
             Vector Cg = new Vector(cg);
-            
+
             ShowMeshParameters(mesh);
             StopAndShowTaskTime("Initialization");
 
@@ -48,6 +49,7 @@ namespace _2DFEM
             //rhs = mesh.Integrate(new Function());
 
             foreach (var finiteElement in mesh.FiniteElements)
+            {
                 foreach (var node in finiteElement.Nodes)
                     if (node.IsInside)
                     {
@@ -69,10 +71,11 @@ namespace _2DFEM
                             if (otherNode.IsInside)
                             {
                                 int I = otherNode.Index;
-                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
+                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
                                     + Calculator.Integrate(v => Input.a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
                             }
                     }
+            }
 
             Vector F = new Vector(rhs);
 
@@ -85,10 +88,10 @@ namespace _2DFEM
             var epsilon = 1e-12;
             Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, epsilon);
             Vector C = result.vector;
-            
+
             Console.WriteLine($"CG completed successfully: {result.iterations} iterations. Residual: {result.error:0.###e+00}");
             StopAndShowTaskTime("Matrix solution");
-            
+
 
             // output error
 
@@ -99,7 +102,11 @@ namespace _2DFEM
             foreach (var finiteElement in mesh.FiniteElements)
                 if (finiteElement.Contains(point))
                 {
-                    approxSolution = finiteElement.GetSolutionAtPoint(C, Cg, point);
+                    foreach (var node in finiteElement.Nodes)
+                        if (node.IsInside)
+                            approxSolution += node.Phi(point) * C[node.Index];
+                        else
+                            approxSolution += node.Phi(point) * Cg[node.Index];
                     break;
                 }
 
@@ -107,7 +114,21 @@ namespace _2DFEM
 
             double squareError = 0;
             foreach (var finiteElement in mesh.FiniteElements)
-                squareError += finiteElement.GetLocalSquareError(C, Cg);
+            {
+                Func<Vector2, double> error = v =>
+                {
+                    double u0 = Input.U(v),
+                           uh0 = 0;
+
+                    foreach (var node in finiteElement.Nodes)
+                        if (node.IsInside)
+                            uh0 += node.Phi(v) * C[node.Index];
+                        else
+                            uh0 += node.Phi(v) * Cg[node.Index];
+                    return (u0 - uh0) * (u0 - uh0);
+                };
+                squareError += Calculator.Integrate(error, finiteElement);
+            }
 
             Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
 

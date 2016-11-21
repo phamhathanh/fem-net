@@ -78,7 +78,7 @@ namespace _2DFEM
         {
             double output = 0;
             foreach (var finiteElement in FiniteElements)
-                output += finiteElement.Integrate(function);
+                ;//output += finiteElement.Integrate(function);
             return output;
         }
     }

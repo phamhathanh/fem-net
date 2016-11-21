@@ -57,6 +57,7 @@ namespace _2DFEM
 
         private void CalculateMatrixAndRHS()
         {
+            /*
             var rhs = new double[interiorNodesCount];
 
             foreach (var finiteElement in mesh.FiniteElements)
@@ -85,6 +86,7 @@ namespace _2DFEM
                     }
 
             this.rhs = new FiniteElementFunction(mesh, rhs);
+            */
         }
     }
 }

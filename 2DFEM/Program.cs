@@ -48,27 +48,29 @@ namespace _2DFEM
             //rhs = mesh.Integrate(new Function());
 
             foreach (var finiteElement in mesh.FiniteElements)
-                for (int i = 0; i < 3; i++)
-                    if (finiteElement.nodes[i].IsInside)
+                foreach (var node in finiteElement.Nodes)
+                    if (node.IsInside)
                     {
-                        int I = finiteElement.nodes[i].Index;
-                        for (int j = 0; j < 3; j++)
-                            if (finiteElement.nodes[j].IsInside)
+                        int I = node.Index;
+                        foreach (var otherNode in finiteElement.Nodes)
+                            if (otherNode.IsInside)
                             {
-                                int J = finiteElement.nodes[j].Index;
-                                A[I, J] += finiteElement.GetLocalStiffness(i, j) + finiteElement.GetLocalMass(i, j);
+                                int J = otherNode.Index;
+                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
+                                    + Calculator.Integrate(v => Input.a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
                             }
 
-                        rhs[I] += finiteElement.GetLocalRHS(i);
+                        rhs[I] += Calculator.Integrate(v => Input.F(v) * node.Phi(v), finiteElement);
                     }
                     else
                     {
-                        int J = finiteElement.nodes[i].Index;
-                        for (int j = 0; j < 3; j++)
-                            if (finiteElement.nodes[j].IsInside)
+                        int J = node.Index;
+                        foreach (var otherNode in finiteElement.Nodes)
+                            if (otherNode.IsInside)
                             {
-                                int I = finiteElement.nodes[j].Index;
-                                Ag[I, J] += finiteElement.GetLocalStiffness(i, j) + finiteElement.GetLocalMass(i, j);
+                                int I = otherNode.Index;
+                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
+                                    + Calculator.Integrate(v => Input.a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
                             }
                     }
 

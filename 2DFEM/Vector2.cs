@@ -12,35 +12,25 @@ namespace _2DFEM
             this.y = y;
         }
 
-        public static Vector2 operator +(Vector2 v1, Vector2 v2)
-        {
-            return new Vector2(v1.x + v2.x, v1.y + v2.y);
-        }
+        public static Vector2 operator +(Vector2 vector1, Vector2 vector2)
+            => new Vector2(vector1.x + vector2.x, vector1.y + vector2.y);
 
-        public static Vector2 operator -(Vector2 v1, Vector2 v2)
-        {
-            return new Vector2(v1.x - v2.x, v1.y - v2.y);
-        }
+        public static Vector2 operator -(Vector2 vector1, Vector2 vector2)
+            => new Vector2(vector1.x - vector2.x, vector1.y - vector2.y);
 
-        public static Vector2 operator *(double d, Vector2 v)
-        {
-            return new Vector2(d * v.x, d * v.y);
-        }
+        public static Vector2 operator *(double scalar, Vector2 vector)
+            => new Vector2(scalar * vector.x, scalar * vector.y);
 
-        public static double Dot(Vector2 v1, Vector2 v2)
-        {
-            return v1.x * v2.x + v1.y * v2.y;
-        }
+        public static double Dot(Vector2 vector1, Vector2 vector2)
+            => vector1.x * vector2.x + vector1.y * vector2.y;
 
-        public static Vector2 Normalize(Vector2 v)
+        public static Vector2 Normalize(Vector2 vector)
         {
-            double n = Math.Sqrt(v.x * v.x + v.y * v.y);
-            return new Vector2(v.x / n, v.y / n);
+            double length = Math.Sqrt(vector.x * vector.x + vector.y * vector.y);
+            return (1 / length) * vector;
         }
 
         public override string ToString()
-        {
-            return "(" + x.ToString() + " ," + y.ToString() + ")";
-        }
+            => $"({x}, {y})";
     }
 }

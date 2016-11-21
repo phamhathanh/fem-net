@@ -1,171 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace _2DFEM
 {
     class Program
     {
-        private static Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
+        private const double a0 = 1;
+        private const int n = 127, m = n;
+
+        private static double F(Vector2 v)
+        {
+            double x = v.x,
+                   y = v.y;
+
+            return -4 / ((x + y + 1) * (x + y + 1) * (x + y + 1)) + 2 * Math.PI * Math.PI * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + a0 * U(v);
+        }
+
+        private static double G(Vector2 v)
+        {
+            return U(v);
+        }
+
+        private static double U(Vector2 v)
+        {
+            double x = v.x,
+                   y = v.y;
+
+            return 1 / (x + y + 1) + Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + 99;
+        }
 
         private static void Main(string[] args)
         {
-            Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
-
-            // initialize
-
-            StartMeasuringTaskTime("Total");
-            StartMeasuringTaskTime("Initialization");
-
-            var rectangle = new Rectangle(0, 1, 0, 1);
-            var mesh = new Mesh(127, 127, rectangle);
-
-            Matrix A = new Matrix(mesh.InteriorNodes.Count, mesh.InteriorNodes.Count);
-            Matrix Ag = new Matrix(mesh.InteriorNodes.Count, mesh.BoundaryNodes.Count);
-            Matrix Bg = new Matrix(mesh.InteriorNodes.Count, mesh.BoundaryNodes.Count);
-
-            double[] cg = new double[mesh.BoundaryNodes.Count];
-
-            {
-                int i = 0;
-                foreach (var boundaryNode in mesh.BoundaryNodes)
-                {
-                    cg[i] = Input.G(boundaryNode.Position);
-                    i++;
-                }
-            }
-            Vector Cg = new Vector(cg);
-
-            ShowMeshParameters(mesh);
-            StopAndShowTaskTime("Initialization");
-
-            // calculate matrix and RHS
-
-            StartMeasuringTaskTime("Matrix & RHS calculation");
-
-            double[] rhs = new double[mesh.InteriorNodes.Count];
-            //rhs = mesh.Integrate(new Function());
-
-            foreach (var finiteElement in mesh.FiniteElements)
-            {
-                foreach (var node in finiteElement.Nodes)
-                    if (node.IsInside)
-                    {
-                        int I = node.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
-                            {
-                                int J = otherNode.Index;
-                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => Input.a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
-                            }
-
-                        rhs[I] += Calculator.Integrate(v => Input.F(v) * node.Phi(v), finiteElement);
-                    }
-                    else
-                    {
-                        int J = node.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
-                            {
-                                int I = otherNode.Index;
-                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => Input.a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
-                            }
-                    }
-            }
-
-            Vector F = new Vector(rhs);
-
-            StopAndShowTaskTime("Matrix & RHS calculation");
-
-            // solve
-
-            StartMeasuringTaskTime("Matrix solution");
-
-            var epsilon = 1e-12;
-            Calculator.CGResult result = Calculator.Solve(A, F - Ag * Cg, epsilon);
-            Vector C = result.vector;
-
-            Console.WriteLine($"CG completed successfully: {result.iterations} iterations. Residual: {result.error:0.###e+00}");
-            StopAndShowTaskTime("Matrix solution");
-
-
-            // output error
-
-            var point = new Vector2(0.40594, 0.52323);
-            double exactSolution = Input.U(point),
-                   approxSolution = 0;
-
-            foreach (var finiteElement in mesh.FiniteElements)
-                if (finiteElement.Contains(point))
-                {
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            approxSolution += node.Phi(point) * C[node.Index];
-                        else
-                            approxSolution += node.Phi(point) * Cg[node.Index];
-                    break;
-                }
-
-            ShowPointError(point, exactSolution, approxSolution);
-
-            double squareError = 0;
-            foreach (var finiteElement in mesh.FiniteElements)
-            {
-                Func<Vector2, double> error = v =>
-                {
-                    double u0 = Input.U(v),
-                           uh0 = 0;
-
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            uh0 += node.Phi(v) * C[node.Index];
-                        else
-                            uh0 += node.Phi(v) * Cg[node.Index];
-                    return (u0 - uh0) * (u0 - uh0);
-                };
-                squareError += Calculator.Integrate(error, finiteElement);
-            }
-
-            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
-
-            StopAndShowTaskTime("Total");
-
+            var laplaceEquation = new LaplaceEquation(a0, F, G, U);
+            laplaceEquation.SolveAndDisplay();
             Console.ReadLine();
-        }
-
-        private static void StartMeasuringTaskTime(string taskName)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            taskTimers.Add(taskName, stopwatch);
-        }
-
-        private static void StopAndShowTaskTime(string taskName)
-        {
-            Stopwatch stopwatch = taskTimers[taskName];
-            stopwatch.Stop();
-            taskTimers.Remove(taskName);
-
-            TimeSpan taskTime = stopwatch.Elapsed;
-            Console.WriteLine($"{taskName} time: {taskTime.TotalSeconds:F3} sec");
-        }
-
-        private static void ShowMeshParameters(Mesh mesh)
-        {
-            Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count()}");
-            Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count()}");
-            Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count()}");
-        }
-
-        private static void ShowPointError(Vector2 point, double exact, double approx)
-        {
-            Console.WriteLine($"Exact solution at  {point}: {exact}");
-            Console.WriteLine($"Approx solution at {point}: {approx}");
-            Console.WriteLine($"The error at point {point}: {approx - exact}");
         }
     }
 }

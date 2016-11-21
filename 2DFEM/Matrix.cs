@@ -1,155 +1,111 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace _2DFEM
 {
     struct Matrix
     {
-        private readonly int rowsCount, colsCount;          // doesnt actually do anything
-        private Dictionary<int, Dictionary<int, double>> _rows;
+        private readonly Dictionary<int, Dictionary<int, double>> rows;
 
-        public Matrix(int rowsCount, int colsCount)
+        public int RowCount { get; }
+        public int ColumnCount { get; }
+        // Doesnt actually do anything.
+
+        public Matrix(int rowCount, int columnCount)
         {
-            _rows = new Dictionary<int, Dictionary<int, double>>();
-            this.rowsCount = rowsCount;
-            this.colsCount = colsCount;
+            rows = new Dictionary<int, Dictionary<int, double>>();
+            RowCount = rowCount;
+            ColumnCount = columnCount;
         }
 
         public double this[int row, int col]
         {
             get
             {
-                if (row < 0 || row >= RowsCount || col < 0 || col >= ColsCount)
+                if (row < 0 || row >= RowCount || col < 0 || col >= ColumnCount)
                     throw new ArgumentOutOfRangeException();
 
                 return GetAt(row, col);
             }
             set
             {
-                if (row < 0 || row >= RowsCount || col < 0 || col >= ColsCount)
+                if (row < 0 || row >= RowCount || col < 0 || col >= ColumnCount)
                     throw new ArgumentOutOfRangeException();
 
                 SetAt(row, col, value);
             }
         }
 
-        public int RowsCount
+        private double GetAt(int row, int col)
         {
-            get
-            {
-                return rowsCount;
-            }
+            Dictionary<int, double> cells;
+            bool rowExists = rows.TryGetValue(row, out cells);
+            if (!rowExists)
+                return default(double);
+
+            double value = default(double);
+            cells.TryGetValue(col, out value);
+            return value;
         }
 
-        public int ColsCount
+        private void SetAt(int row, int column, double value)
         {
-            get
+            bool valueIsDefault = EqualityComparer<double>.Default.Equals(value, default(double));
+            if (valueIsDefault)
             {
-                return colsCount;
+                RemoveAt(row, column);
+                return;
             }
+
+            Dictionary<int, double> cells;
+            var rowExists = rows.TryGetValue(row, out cells);
+            if (!rowExists)
+            {
+                cells = new Dictionary<int, double>();
+                rows.Add(row, cells);
+            }
+            cells[column] = value;
         }
 
-        public double GetAt(int row, int col)
+        private void RemoveAt(int row, int column)
         {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                double value = default(double);
-                if (cols.TryGetValue(col, out value))
-                    return value;
-            }
-            return default(double);
+            Dictionary<int, double> cells;
+            var rowExists = rows.TryGetValue(row, out cells);
+            if (!rowExists)
+                return;
+
+            cells.Remove(column);
+            if (cells.Count == 0)
+                rows.Remove(row);
         }
 
-        public void SetAt(int row, int col, double value)
+        public static Vector operator *(Matrix matrix, Vector vector)
         {
-            if (EqualityComparer<double>.Default.Equals(value, default(double)))
-            {
-                RemoveAt(row, col);
-            }
-            else
-            {
-                Dictionary<int, double> cols;
-                if (!_rows.TryGetValue(row, out cols))
-                {
-                    cols = new Dictionary<int, double>();
-                    _rows.Add(row, cols);
-                }
-                cols[col] = value;
-            }
-        }
+            if (vector.Length != matrix.ColumnCount)
+                throw new ArgumentException("Dimension mismatched.");
 
-        public void RemoveAt(int row, int col)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                cols.Remove(col);
-                if (cols.Count == 0)
-                    _rows.Remove(row);
-            }
-        }
+            int length = matrix.RowCount;
 
-        public IEnumerable<KeyValuePair<int, double>> GetRowData(int row)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                foreach (KeyValuePair<int, double> pair in cols)
-                {
-                    yield return pair;
-                }
-            }
-        }
-
-        public int GetRowDataCount(int row)
-        {
-            Dictionary<int, double> cols;
-            if (_rows.TryGetValue(row, out cols))
-            {
-                return cols.Count;
-            }
-            return 0;
-        }
-
-        public IEnumerable<double> GetColumnData(int col)
-        {
-            foreach (KeyValuePair<int, Dictionary<int, double>> rowdata in _rows)
-            {
-                double result;
-                if (rowdata.Value.TryGetValue(col, out result))
-                    yield return result;
-            }
-        }
-
-        public int GetColumnDataCount(int col)
-        {
-            int result = 0;
-
-            foreach (KeyValuePair<int, Dictionary<int, double>> cols in _rows)
-            {
-                if (cols.Value.ContainsKey(col))
-                    result++;
-            }
-            return result;
-        }
-        
-        public static Vector operator *(Matrix m, Vector v)
-        {
-            if (v.Length != m.ColsCount)
-                throw new ArgumentException("Matrix and vector size must match.");
-
-            int length = m.RowsCount;
-
-            double[] output = new double[length];
+            var output = new double[length];
             for (int i = 0; i < length; i++)
             {
                 output[i] = 0;
-                foreach (var p in m.GetRowData(i))
-                    output[i] += p.Value * v[p.Key];
+                foreach (var p in matrix.GetRowData(i))
+                    output[i] += p.Value * vector[p.Key];
             }
-
             return new Vector(output);
+        }
+
+        private IEnumerable<KeyValuePair<int, double>> GetRowData(int row)
+        {
+            Dictionary<int, double> cells;
+            var rowExists = rows.TryGetValue(row, out cells);
+            if (!rowExists)
+                yield break;
+
+            foreach (KeyValuePair<int, double> pair in cells)
+                yield return pair;
         }
     }
 }

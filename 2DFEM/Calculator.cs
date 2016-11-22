@@ -92,34 +92,32 @@ namespace FEMSharp
                 sum += w[i] * function(baricentricPoint);
             }
 
-            return sum * Math.Abs(u.x * v.y - u.y * v.x) / 2;
+            var area = Math.Abs(u.x*v.y - u.y*v.x) / 2;
+            return sum * area;
         }
 
         public static double Integrate(Func<Vector3, double> function, FEM3D.FiniteElement finiteElement)
         {
-            // Gaussian quadrature coefficents
-            var weights = new[] { 0.225,
-                            0.125939180544827152595683945500181333657639231912257007644510,
-                            0.125939180544827152595683945500181333657639231912257007644510,
-                            0.125939180544827152595683945500181333657639231912257007644510,
-                            0.132394152788506180737649387833151999675694101421076325688822,
-                            0.132394152788506180737649387833151999675694101421076325688822,
-                            0.132394152788506180737649387833151999675694101421076325688822 };
+            double w0 = -74.0 / 5625,
+                    w1 = 343.0 / 45000,
+                    w2 = 56.0 / 2250;
+            var weights = new[] { w0, w1, w1, w1, w1, w2, w2, w2, w2, w2, w2 };
 
-            var points = new[] { new Vector2(0.333333333333333333333333333333333333333333333333333333333333,
-                                        0.333333333333333333333333333333333333333333333333333333333333),
-                            new Vector2(0.101286507323456338800987361915123828055575156890876627305353,
-                                        0.101286507323456338800987361915123828055575156890876627305353),
-                            new Vector2(0.797426985353087322398025276169752343888849686218246745389292,
-                                        0.101286507323456338800987361915123828055575156890876627305353),
-                            new Vector2(0.101286507323456338800987361915123828055575156890876627305353,
-                                        0.797426985353087322398025276169752343888849686218246745389292),
-                            new Vector2(0.470142064105115089770441209513447600515853414537694801266074,
-                                        0.470142064105115089770441209513447600515853414537694801266074),
-                            new Vector2(0.470142064105115089770441209513447600515853414537694801266074,
-                                        0.059715871789769820459117580973104798968293170924610397467850),
-                            new Vector2(0.059715871789769820459117580973104798968293170924610397467850,
-                                        0.470142064105115089770441209513447600515853414537694801266074) };
+            double c = 11.0 / 14,
+                d = 1.0 / 14,
+                a = 0.3994035761667992,
+                b = 0.1005964238332008;
+            var points = new[] { new Vector3(0.25, 0.25, 0.25),
+                                new Vector3(c, d, d),
+                                new Vector3(d, c, d),
+                                new Vector3(d, d, c),
+                                new Vector3(d, d, d),
+                                new Vector3(a, a, b),
+                                new Vector3(a, b, a),
+                                new Vector3(a, b, b),
+                                new Vector3(b, a, a),
+                                new Vector3(b, a, b),
+                                new Vector3(b, b, a) };
 
             double sum = 0;
             Vector3 x0 = finiteElement.Nodes[0].Position,
@@ -127,13 +125,14 @@ namespace FEMSharp
                     v = finiteElement.Nodes[2].Position - x0,
                     w = finiteElement.Nodes[3].Position - x0;
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 11; i++)
             {
-                var baricentricPoint = x0 + points[i].x * u + points[i].y * v;
+                var baricentricPoint = x0 + points[i].x*u + points[i].y*v + points[i].z*w;
                 sum += weights[i] * function(baricentricPoint);
             }
 
-            return sum * Math.Abs(u.x * v.y - u.y * v.x) / 2;
+            var volumn = Math.Abs(u.x*v.y*w.z + u.y*v.z*w.z + u.z*v.x*w.y - u.z*v.y*w.x - u.y*v.x*w.z - u.x*v.z*w.y) / 6;
+            return sum * volumn * 6;
         }
     }
 }

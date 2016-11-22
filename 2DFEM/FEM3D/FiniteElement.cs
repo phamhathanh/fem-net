@@ -9,6 +9,7 @@ namespace FEMSharp.FEM3D
         public class Node
         {
             public Vector3 Position { get; }
+            public double Volume { get; }
             public int Index { get; }
             public bool IsInside { get; }
 
@@ -37,6 +38,8 @@ namespace FEMSharp.FEM3D
 
                 var gradient = (1 / denominator) * (new Vector3(a, b, c));
                 GradPhi = point => gradient;
+
+                Volume = Math.Abs(denominator);
             }
         }
 

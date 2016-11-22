@@ -23,12 +23,9 @@ namespace FEMSharp.FEM2D
                 IsInside = isInside;
 
                 // Linear interpolation, using Cramer's rule.
-                double x1 = thisNode.x,
-                    y1 = thisNode.y,
-                    x2 = thatNode.x,
-                    y2 = thatNode.y,
-                    x3 = thatOtherNode.x,
-                    y3 = thatOtherNode.y,
+                double x1 = thisNode.x, y1 = thisNode.y,
+                    x2 = thatNode.x, y2 = thatNode.y,
+                    x3 = thatOtherNode.x, y3 = thatOtherNode.y,
                     a = y3 - y2,
                     b = x2 - x3,
                     c = y2 * x3 - x2 * y3,

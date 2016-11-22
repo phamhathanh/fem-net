@@ -28,7 +28,6 @@ namespace FEMSharp.FEM2D
 
         private static void Main(string[] args)
         {
-            Console.WriteLine(new Vector2(2, 4));
             var laplaceEquation = new LaplaceEquation(a0, F, G, U);
             laplaceEquation.SolveAndDisplay();
             Console.ReadLine();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace FEMSharp.FEM3D
 {
@@ -14,55 +15,42 @@ namespace FEMSharp.FEM3D
             public Func<Vector3, double> Phi { get; }
             public Func<Vector3, Vector3> GradPhi { get; }
 
-            public Node(Vector3 thisNode, Vector3 thatNode, Vector3 thatOtherNode,
+            public Node(Vector3 thisNode, Vector3 thatNode, Vector3 otherNode, Vector3 thatOtherNode,
                         int index, bool isInside)
             {
                 Position = thisNode;
                 Index = index;
                 IsInside = isInside;
+                
+                // Linear interpolation, using Cramer's rule.
+                double x1 = thisNode.x, y1 = thisNode.y, z1 = thisNode.z,
+                    x2 = thatNode.x, y2 = thatNode.y, z2 = thatNode.z,
+                    x3 = otherNode.x, y3 = otherNode.y, z3 = otherNode.z,
+                    x4 = thatOtherNode.x, y4 = thatOtherNode.y, z4 = thatOtherNode.z,
+                    a = -y3*y4 - y4*z2 - y2*z3 + y3*z2 + y2*z4 + y4*z3,
+                    b = -x2*z4 - x3*z2 - x4*z3 + x4*z2 + x3*z4 + x2*z3,
+                    c = -x3*y3 - y3*y4 - y4*y2 + x4*y3 + x3*y2 + x2*y4,
+                    d = x2*y3*z4 + x3*y4*z2 + y2*z3*x4 - x4*y3*z2 - x3*y2*z4 - x2*z3*y4,
+                    denominator = a*x1 + b*y1 + c*z1 + d;
 
-                Phi = CreateBasisFunction(thisNode, thatNode, thatOtherNode);
-                GradPhi = CreateGradientOfBasisFunction(thisNode, thatNode, thatOtherNode);
-            }
+                Phi = point => (a * point.x + b * point.y + c * point.z + d) / denominator;
 
-            private Func<Vector3, double> CreateBasisFunction(Vector3 thisNode, Vector3 thatNode, Vector3 thatOtherNode)
-            {
-                double x1 = thisNode.x,
-                       y1 = thisNode.y,
-                       x2 = thatNode.x,
-                       y2 = thatNode.y,
-                       x3 = thatOtherNode.x,
-                       y3 = thatOtherNode.y;
-
-                // Linear interpolation.
-                return point => ((y3 - y2) * point.x + (x2 - x3) * point.y + y2 * x3 - x2 * y3)
-                        / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2);
-            }
-
-            private Func<Vector3, Vector3> CreateGradientOfBasisFunction(Vector3 thisNode, Vector3 thatNode, Vector3 thatOtherNode)
-            {
-                double x1 = thisNode.x,
-                       y1 = thisNode.y,
-                       x2 = thatNode.x,
-                       y2 = thatNode.y,
-                       x3 = thatOtherNode.x,
-                       y3 = thatOtherNode.y;
-
-                var gradient = new Vector3((y3 - y2) / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2),
-                                (x2 - x3) / (x3 * y2 - x2 * y3 + x2 * y1 - x3 * y1 + x1 * y3 - x1 * y2));
-                return point => gradient;
+                var gradient = (1 / denominator) * (new Vector3(a, b, c));
+                GradPhi = point => gradient;
             }
         }
 
         public ReadOnlyCollection<Node> Nodes { get; }
 
-        public FiniteElement(FEM3D.Node node0, FEM3D.Node node1, FEM3D.Node node2)
+        public FiniteElement(FEM3D.Node node0, FEM3D.Node node1, FEM3D.Node node2, FEM3D.Node node3)
         {
-            var feNode0 = new Node(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
-            var feNode1 = new Node(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
-            var feNode2 = new Node(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
-            Nodes = new ReadOnlyCollection<Node>(new[] { feNode0, feNode1, feNode2 });
+            var feNode0 = new Node(node0.Position, node1.Position, node2.Position, node3.Position, node0.Index, node0.IsInside);
+            var feNode1 = new Node(node1.Position, node2.Position, node3.Position, node0.Position, node1.Index, node1.IsInside);
+            var feNode2 = new Node(node2.Position, node3.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
+            var feNode3 = new Node(node3.Position, node0.Position, node1.Position, node2.Position, node3.Index, node3.IsInside);
+            Nodes = new ReadOnlyCollection<Node>(new[] { feNode0, feNode1, feNode2, feNode3 });
         }
+
         public double GetValueOfFunctionAtPoint(Vector coefficients, Vector3 point)
         {
             if (!this.Contains(point))
@@ -75,17 +63,7 @@ namespace FEMSharp.FEM3D
             return sum;
         }
 
-        public bool Contains(Vector3 v)
-        {
-            Vector3 p0 = Nodes[0].Position,
-                    p1 = Nodes[1].Position,
-                    p2 = Nodes[2].Position;
-
-            double signedArea = (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y),
-                s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * v.x + (p0.x - p2.x) * v.y) / (2 * signedArea),
-                t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * v.x + (p1.x - p0.x) * v.y) / (2 * signedArea);
-
-            return s >= 0 && t >= 0 && (s + t) <= 1;
-        }
+        public bool Contains(Vector3 point)
+            => Nodes.All(node => node.Phi(point) >= 0);
     }
 }

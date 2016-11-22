@@ -37,6 +37,7 @@ namespace FEMSharp.FEM2D
             Initialize();
             CalculateMatrixAndRHS();
             SolveMatrix();
+            OutputError();
 
             StopAndShowTaskTime("Total");
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FEMSharp.FEM2D
+namespace FEMSharp
 {
     struct Matrix
     {

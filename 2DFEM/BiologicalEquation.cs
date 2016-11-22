@@ -5,10 +5,10 @@ using System.Linq;
 
 namespace _2DFEM
 {
-    class LaplaceEquation
+    class BiologicalEquation
     {
-        private readonly double a0;
-        private readonly Func<Vector2, double> f, g, u;
+        /*
+        private readonly double k, Kb, Km, nnu, zet, c1, c2, dt, T, r, mmu;
 
         private readonly Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
 
@@ -17,16 +17,24 @@ namespace _2DFEM
         private Matrix A, Ag;
 
         private Vector boundary, rhs, result;
+
         // TODO: Change to a FE function.
 
         // -Laplace(u) + a0 * u = f
         // u = g on boundary
-        public LaplaceEquation(double a0, Func<Vector2, double> f, Func<Vector2, double> g, Func<Vector2, double> u)
+        public BiologicalEquation()
         {
-            this.a0 = a0;
-            this.f = f;
-            this.g = g;
-            this.u = u;
+            k = 17;
+            Kb = 0.0005;
+            Km = 0.0005;
+            r = 0.2;
+            mmu = 1.5;
+            nnu = 0;
+            zet = 0;
+            c1 = 0;
+            c2 = 0;
+            dt = 0.0416667;
+            T = dt;
         }
 
         public void SolveAndDisplay()
@@ -190,5 +198,6 @@ namespace _2DFEM
             Console.WriteLine($"Approx solution at {point}: {approx}");
             Console.WriteLine($"The error at point {point}: {approx - exact}");
         }
+        */
     }
 }

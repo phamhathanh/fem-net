@@ -16,9 +16,7 @@ namespace _2DFEM
         }
 
         private static double G(Vector2 v)
-        {
-            return U(v);
-        }
+            => U(v);
 
         private static double U(Vector2 v)
         {
@@ -30,6 +28,7 @@ namespace _2DFEM
 
         private static void Main(string[] args)
         {
+            Console.WriteLine(new Vector2(2, 4));
             var laplaceEquation = new LaplaceEquation(a0, F, G, U);
             laplaceEquation.SolveAndDisplay();
             Console.ReadLine();

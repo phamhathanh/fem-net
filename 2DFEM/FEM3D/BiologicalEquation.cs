@@ -101,17 +101,17 @@ namespace FEMSharp.FEM3D
                 for (int i = 1; i <= 168; i++)
                 {
                     var mb = Integrate(ue[0]);
-                    mbFile.WriteLine($"{T} {mb}");
+                    mbFile.WriteLine($"{T:F3} {mb}");
                     var dom = Integrate(ue[1]);
-                    domFile.WriteLine($"{T} {dom}");
+                    domFile.WriteLine($"{T:F3} {dom}");
                     var som = Integrate(ue[0]);
-                    somFile.WriteLine($"{T} {som}");
+                    somFile.WriteLine($"{T:F3} {som}");
                     var fom = Integrate(ue[0]);
-                    fomFile.WriteLine($"{T} {fom}");
+                    fomFile.WriteLine($"{T:F3} {fom}");
                     var enz = Integrate(ue[0]);
-                    enzFile.WriteLine($"{T} {enz}");
+                    enzFile.WriteLine($"{T:F3} {enz}");
                     var co2 = Integrate(ue[0]);
-                    co2File.WriteLine($"{T} {co2}");
+                    co2File.WriteLine($"{T:F3} {co2}");
 
                     ue = Solve(ue);
 

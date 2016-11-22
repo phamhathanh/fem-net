@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 
-namespace _2DFEM
+namespace FEMSharp.FEM2D
 {
     internal class FiniteElement
     {
@@ -56,7 +56,7 @@ namespace _2DFEM
 
         public ReadOnlyCollection<Node> Nodes { get; }
 
-        public FiniteElement(_2DFEM.Node node0, _2DFEM.Node node1, _2DFEM.Node node2)
+        public FiniteElement(FEM2D.Node node0, FEM2D.Node node1, FEM2D.Node node2)
         {
             var feNode0 = new Node(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
             var feNode1 = new Node(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);

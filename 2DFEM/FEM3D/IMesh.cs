@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace FEMSharp.FEM2D
+namespace FEMSharp.FEM3D
 {
     internal interface IMesh
     {

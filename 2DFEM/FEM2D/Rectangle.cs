@@ -1,4 +1,4 @@
-﻿namespace _2DFEM
+﻿namespace FEMSharp.FEM2D
 {
     public class Rectangle
     {

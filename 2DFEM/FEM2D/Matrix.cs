@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace _2DFEM
+namespace FEMSharp.FEM2D
 {
     struct Matrix
     {
@@ -10,7 +9,6 @@ namespace _2DFEM
 
         public int RowCount { get; }
         public int ColumnCount { get; }
-        // Doesnt actually do anything.
 
         public Matrix(int rowCount, int columnCount)
         {
@@ -23,34 +21,38 @@ namespace _2DFEM
         {
             get
             {
-                if (row < 0 || row >= RowCount || col < 0 || col >= ColumnCount)
-                    throw new ArgumentOutOfRangeException();
-
                 return GetAt(row, col);
             }
             set
             {
-                if (row < 0 || row >= RowCount || col < 0 || col >= ColumnCount)
-                    throw new ArgumentOutOfRangeException();
-
                 SetAt(row, col, value);
             }
         }
 
-        private double GetAt(int row, int col)
+        private double GetAt(int row, int column)
         {
+            Validate(row, column);
+
             Dictionary<int, double> cells;
             bool rowExists = rows.TryGetValue(row, out cells);
             if (!rowExists)
                 return default(double);
 
             double value = default(double);
-            cells.TryGetValue(col, out value);
+            cells.TryGetValue(column, out value);
             return value;
+        }
+
+        private void Validate(int row, int column)
+        {
+            if (row < 0 || row >= RowCount || column < 0 || column >= ColumnCount)
+                throw new IndexOutOfRangeException();
         }
 
         private void SetAt(int row, int column, double value)
         {
+            Validate(row, column);
+
             bool valueIsDefault = EqualityComparer<double>.Default.Equals(value, default(double));
             if (valueIsDefault)
             {

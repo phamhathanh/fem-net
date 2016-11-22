@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace _2DFEM
+namespace FEMSharp.FEM3D
 {
     class BiologicalEquation
     {

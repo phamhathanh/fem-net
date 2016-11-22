@@ -41,16 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FEM3DProgram.cs" />
+    <Compile Include="FEM3D\FiniteElementFunction.cs" />
     <Compile Include="FEM3D\FiniteElement.cs" />
     <Compile Include="FEM2D\Function.cs" />
-    <Compile Include="FEM2D\Calculator.cs" />
+    <Compile Include="Calculator.cs" />
     <Compile Include="FEM2D\FiniteElement.cs" />
     <Compile Include="FEM2D\IFunction.cs" />
     <Compile Include="FEM2D\IMesh.cs" />
     <Compile Include="FEM3D\BiologicalEquation.cs" />
     <Compile Include="FEM2D\LaplaceEquation.cs" />
     <Compile Include="FEM2D\Node.cs" />
-    <Compile Include="FEM2D\Program.cs" />
+    <Compile Include="FEM2DProgram.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="FEM3D\IMesh.cs" />
     <Compile Include="FEM3D\Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

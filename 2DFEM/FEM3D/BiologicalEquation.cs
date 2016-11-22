@@ -1,29 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+using System.IO;
 
 namespace FEMSharp.FEM3D
 {
     class BiologicalEquation
     {
-        /*
-        private readonly double k, Kb, Km, nnu, zet, c1, c2, dt, T, r, mmu;
+        private readonly double k, Kb, Km, nnu, zet, c1, c2, dt, r, mmu;
+        private readonly IMesh mesh;
 
-        private readonly Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
+        private Matrix A;
+        private double T = 0;
 
-        private Mesh mesh;
-        private int interiorNodesCount;
-        private Matrix A, Ag;
-
-        private Vector boundary, rhs, result;
-
-        // TODO: Change to a FE function.
-
-        // -Laplace(u) + a0 * u = f
-        // u = g on boundary
-        public BiologicalEquation()
+        public BiologicalEquation(IMesh mesh)
         {
+            this.mesh = mesh;
+
             k = 17;
             Kb = 0.0005;
             Km = 0.0005;
@@ -34,170 +25,134 @@ namespace FEMSharp.FEM3D
             c1 = 0;
             c2 = 0;
             dt = 0.0416667;
-            T = dt;
+            // TODO: Take from args.
         }
 
-        public void SolveAndDisplay()
+        private Vector[] CalculateF(Vector[] ue)
         {
-            Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
-            StartMeasuringTaskTime("Total");
+            int n = mesh.Nodes.Count;
+            var output = new double[6][];
+            for (int i = 0; i < 6; i++)
+                output[i] = new double[n];
 
-            Initialize();
-            CalculateMatrixAndRHS();
-            SolveMatrix();
-
-            StopAndShowTaskTime("Total");
-        }
-
-        private void Initialize()
-        {
-            StartMeasuringTaskTime("Initialization");
-
-            var rectangle = new Rectangle(0, 1, 0, 1);
-            mesh = new Mesh(127, 127, rectangle);
-            interiorNodesCount = mesh.InteriorNodes.Count();
-            var boundaryNodesCount = mesh.BoundaryNodes.Count();
-            A = new Matrix(interiorNodesCount, interiorNodesCount);
-            Ag = new Matrix(interiorNodesCount, boundaryNodesCount);
-
-            var cg = new double[boundaryNodesCount];
+            for (int i = 0; i < n; i++)
             {
-                int i = 0;
-                foreach (var boundaryNode in mesh.BoundaryNodes)
+                output[0][i] = k*ue[0][i]*ue[1][i]/(Kb + ue[0][i]) - (mmu + r + nnu)*ue[0][i];
+                output[1][i] = k * ue[4][i] / (c1 * ue[2][i] + c2 * ue[3][i]) - k * ue[0][i] * ue[1][i] / (Kb + ue[0][i])
+                    + 0.5 * (zet * ue[4][i] + mmu * ue[0][i]);
+                output[2][i] = -c1*ue[2][i]*ue[4][i]/(Km + ue[4][i]) + 0.5*(zet*ue[4][i] + mmu*ue[0][i]);
+                output[3][i] = -c2*ue[3][i]*ue[4][i]/(Km + ue[4][i]);
+                output[4][i] = nnu*ue[0][i] - zet*ue[4][i];
+                output[4][i] = r*ue[0][i];
+            }
+
+            var vectorArray = new Vector[6];
+            for (int i = 0; i < 6; i++)
+                vectorArray[i] = new Vector(output[i]);
+            return vectorArray;
+        }
+
+        private Func<Vector3, double>[] UE0 = new Func<Vector3, double>[]
+        {
+            v => 1,
+            v => 300 * Math.Cos(v.x*v.y) / Math.Cos(v.x*v.y),
+            v => 0,
+            v => 0,
+            v => 0,
+            v => 0
+        };
+
+        public void SolveAndOutput()
+        {
+            int n = mesh.Nodes.Count;
+            A = new Matrix(n*6, n*6);
+
+            var ue = new Vector[6];
+            for (int i = 0; i < 6; i++)
+            {
+                var uei = new double[n];
+                foreach (var finiteElement in mesh.FiniteElements)
+                    foreach (var node in finiteElement.Nodes)
+                        uei[node.Index] += UE0[i](node.Position);
+                ue[i] = new Vector(uei);
+            }
+
+            foreach (var finiteElement in mesh.FiniteElements)
+                for (int i = 0; i < 6; i++)
+                    foreach (var node in finiteElement.Nodes)
+                    {
+                        int I = n*i + node.Index;
+                        for (int j = 0; j < 6; j++)
+                            foreach (var otherNode in finiteElement.Nodes)
+                            {
+                                int J = n*j + otherNode.Index;
+                                A[I, J] += Calculator.Integrate(v => node.Phi(v) * otherNode.Phi(v), finiteElement);
+                            }
+                    }
+
+            string name = "6L";
+            using (var mbFile = new StreamWriter($"./MB_{name}.dat"))
+            using (var domFile = new StreamWriter($"./DOM_{name}.dat"))
+            using (var somFile = new StreamWriter($"./SOM_{name}.dat"))
+            using (var fomFile = new StreamWriter($"./FOM_{name}.dat"))
+            using (var enzFile = new StreamWriter($"./ENZ_{name}.dat"))
+            using (var co2File = new StreamWriter($"./CO2_{name}.dat"))
+            {
+                for (int i = 1; i <= 168; i++)
                 {
-                    cg[i] = g(boundaryNode.Position);
-                    i++;
+                    var mb = Integrate(ue[0]);
+                    mbFile.WriteLine($"{T} {mb}");
+                    var dom = Integrate(ue[1]);
+                    domFile.WriteLine($"{T} {dom}");
+                    var som = Integrate(ue[0]);
+                    somFile.WriteLine($"{T} {som}");
+                    var fom = Integrate(ue[0]);
+                    fomFile.WriteLine($"{T} {fom}");
+                    var enz = Integrate(ue[0]);
+                    enzFile.WriteLine($"{T} {enz}");
+                    var co2 = Integrate(ue[0]);
+                    co2File.WriteLine($"{T} {co2}");
+
+                    ue = Solve(ue);
+
+                    T += dt;
                 }
             }
-            boundary = new Vector(cg);
-
-            ShowMeshParameters(mesh);
-            StopAndShowTaskTime("Initialization");
         }
 
-        private void CalculateMatrixAndRHS()
+        private Vector[] Solve(Vector[] ue)
         {
-            StartMeasuringTaskTime("Matrix & RHS calculation");
+            var f = CalculateF(ue);
 
-            double[] rhs = new double[mesh.InteriorNodes.Count];
+            int n = mesh.Nodes.Count;
+            var rhs0 = new double[n*6];
             foreach (var finiteElement in mesh.FiniteElements)
-            {
-                foreach (var node in finiteElement.Nodes)
-                    if (node.IsInside)
-                    {
-                        int I = node.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
-                            {
-                                int J = otherNode.Index;
-                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
-                            }
-
-                        rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement);
-                    }
-                    else
-                    {
-                        int J = node.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
-                            {
-                                int I = otherNode.Index;
-                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
-                            }
-                    }
-            }
-
-            this.rhs = new Vector(rhs);
-
-            StopAndShowTaskTime("Matrix & RHS calculation");
-        }
-
-        private void SolveMatrix()
-        {
-            StartMeasuringTaskTime("Matrix solution");
+                for (int i = 0; i < 6; i++)
+                    foreach (var node in finiteElement.Nodes)
+                        rhs0[n*i + node.Index] += Calculator.Integrate(v => (finiteElement.GetValueOfFunctionAtPoint(ue[i], v)
+                                        + dt * finiteElement.GetValueOfFunctionAtPoint(f[i], v)) * node.Phi(v), finiteElement);
+            var rhs = new Vector(rhs0);
 
             var epsilon = 1e-12;
-            Calculator.CGResult result = Calculator.Solve(A, rhs - Ag * boundary, epsilon);
-            this.result = result.vector;
-
-            Console.WriteLine($"CG completed successfully: {result.iterations} iterations. Residual: {result.error:0.###e+00}");
-
-            StopAndShowTaskTime("Matrix solution");
-        }
-
-        private void OutputError()
-        {
-            var point = new Vector2(0.40594, 0.52323);
-            // Some random point inside the mesh.
-            double exactSolution = u(point),
-                   approxSolution = 0;
-
-            foreach (var finiteElement in mesh.FiniteElements)
-                if (finiteElement.Contains(point))
-                {
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            approxSolution += node.Phi(point) * result[node.Index];
-                        else
-                            approxSolution += node.Phi(point) * boundary[node.Index];
-                    break;
-                }
-
-            ShowPointError(point, exactSolution, approxSolution);
-
-            double squareError = 0;
-            foreach (var finiteElement in mesh.FiniteElements)
+            var result = Calculator.Solve(A, rhs, epsilon).vector;
+            var output = new Vector[6];
+            for (int i = 0; i < 6; i++)
             {
-                Func<Vector2, double> error = v =>
-                {
-                    double u0 = u(v),
-                           uh0 = 0;
-
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            uh0 += node.Phi(v) * result[node.Index];
-                        else
-                            uh0 += node.Phi(v) * boundary[node.Index];
-                    return (u0 - uh0) * (u0 - uh0);
-                };
-                squareError += Calculator.Integrate(error, finiteElement);
+                var ui = new double[n];
+                for (int j = 0; j < n; j++)
+                    ui[j] = result[i*n + j];
+                output[i] = new Vector(ui);
             }
-
-            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
+            return output;
         }
 
-        private void StartMeasuringTaskTime(string taskName)
+        // Should belong to IMesh or other static class.
+        private double Integrate(Vector function)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            taskTimers.Add(taskName, stopwatch);
+            double output = 0;
+            foreach (var finiteElement in mesh.FiniteElements)
+                output += Calculator.Integrate(v => finiteElement.GetValueOfFunctionAtPoint(function, v), finiteElement);
+            return output;
         }
-
-        private void StopAndShowTaskTime(string taskName)
-        {
-            Stopwatch stopwatch = taskTimers[taskName];
-            stopwatch.Stop();
-            taskTimers.Remove(taskName);
-
-            TimeSpan taskTime = stopwatch.Elapsed;
-            Console.WriteLine($"{taskName} time: {taskTime.TotalSeconds:F3} sec");
-        }
-
-        private void ShowMeshParameters(Mesh mesh)
-        {
-            Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count()}");
-            Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count()}");
-            Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count()}");
-        }
-
-        private void ShowPointError(Vector2 point, double exact, double approx)
-        {
-            Console.WriteLine($"Exact solution at  {point}: {exact}");
-            Console.WriteLine($"Approx solution at {point}: {approx}");
-            Console.WriteLine($"The error at point {point}: {approx - exact}");
-        }
-        */
     }
 }

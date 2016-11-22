@@ -27,9 +27,9 @@ namespace FEMSharp.FEM3D
                     x2 = thatNode.x, y2 = thatNode.y, z2 = thatNode.z,
                     x3 = otherNode.x, y3 = otherNode.y, z3 = otherNode.z,
                     x4 = thatOtherNode.x, y4 = thatOtherNode.y, z4 = thatOtherNode.z,
-                    a = -y3*y4 - y4*z2 - y2*z3 + y3*z2 + y2*z4 + y4*z3,
+                    a = -y3*z4 - y4*z2 - y2*z3 + y3*z2 + y2*z4 + y4*z3,
                     b = -x2*z4 - x3*z2 - x4*z3 + x4*z2 + x3*z4 + x2*z3,
-                    c = -x3*y3 - y3*y4 - y4*y2 + x4*y3 + x3*y2 + x2*y4,
+                    c = -x2*y3 - x3*y4 - x4*y2 + x4*y3 + x3*y2 + x2*y4,
                     d = x2*y3*z4 + x3*y4*z2 + y2*z3*x4 - x4*y3*z2 - x3*y2*z4 - x2*z3*y4,
                     denominator = a*x1 + b*y1 + c*z1 + d;
 

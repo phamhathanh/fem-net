@@ -1,8 +1,9 @@
-﻿using System;
+﻿using FEMSharp.FEM2D;
+using System;
 
-namespace FEMSharp.FEM2D
+namespace FEMSharp
 {
-    class Program
+    internal static class FEM2DProgram
     {
         private const double a0 = 1;
         private const int n = 127, m = n;
@@ -26,7 +27,7 @@ namespace FEMSharp.FEM2D
             return 1 / (x + y + 1) + Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + 99;
         }
 
-        private static void Main(string[] args)
+        public static void Run()
         {
             var laplaceEquation = new LaplaceEquation(a0, F, G, U);
             laplaceEquation.SolveAndDisplay();

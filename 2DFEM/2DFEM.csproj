@@ -53,6 +53,7 @@
     <Compile Include="FEM2D\LaplaceEquation.cs" />
     <Compile Include="FEM2D\Node.cs" />
     <Compile Include="FEM2DProgram.cs" />
+    <Compile Include="FEM3D\MeshFromFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="FEM3D\IMesh.cs" />
     <Compile Include="FEM3D\Node.cs" />

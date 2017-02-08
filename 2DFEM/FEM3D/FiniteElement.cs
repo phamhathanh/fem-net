@@ -61,8 +61,7 @@ namespace FEMSharp.FEM3D
 
             double sum = 0;
             foreach (var node in Nodes)
-                if (node.IsInside)
-                    sum += node.Phi(point) * coefficients[node.Index];
+                sum += node.Phi(point) * coefficients[node.Index];
             return sum;
         }
 

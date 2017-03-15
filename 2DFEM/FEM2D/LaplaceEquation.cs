@@ -12,7 +12,7 @@ namespace FEMSharp.FEM2D
 
         private readonly Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
 
-        private Mesh mesh;
+        private IMesh mesh;
         private int interiorNodesCount;
         private Matrix A, Ag;
 
@@ -46,10 +46,9 @@ namespace FEMSharp.FEM2D
         {
             StartMeasuringTaskTime("Initialization");
 
-            var rectangle = new Rectangle(0, 1, 0, 1);
-            mesh = new Mesh(127, 127, rectangle);
-            interiorNodesCount = mesh.InteriorNodes.Count();
-            var boundaryNodesCount = mesh.BoundaryNodes.Count();
+            mesh = new MeshFromFile("./square.mesh");
+            interiorNodesCount = mesh.InteriorNodes.Count;
+            var boundaryNodesCount = mesh.BoundaryNodes.Count;
             A = new Matrix(interiorNodesCount, interiorNodesCount);
             Ag = new Matrix(interiorNodesCount, boundaryNodesCount);
 
@@ -72,7 +71,7 @@ namespace FEMSharp.FEM2D
         {
             StartMeasuringTaskTime("Matrix & RHS calculation");
 
-            double[] rhs = new double[mesh.InteriorNodes.Count];
+            var rhs = new double[mesh.InteriorNodes.Count];
             foreach (var finiteElement in mesh.FiniteElements)
             {
                 foreach (var node in finiteElement.Nodes)
@@ -178,7 +177,7 @@ namespace FEMSharp.FEM2D
             Console.WriteLine($"{taskName} time: {taskTime.TotalSeconds:F3} sec");
         }
 
-        private void ShowMeshParameters(Mesh mesh)
+        private void ShowMeshParameters(IMesh mesh)
         {
             Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count()}");
             Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count()}");

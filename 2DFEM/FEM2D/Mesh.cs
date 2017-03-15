@@ -1,14 +1,15 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace FEMSharp.FEM2D
 {
     internal class Mesh : IMesh
     {
-        public ReadOnlyCollection<Node> Nodes { get; }
-        public ReadOnlyCollection<Node> InteriorNodes { get; }
-        public ReadOnlyCollection<Node> BoundaryNodes { get; }
-        public ReadOnlyCollection<FiniteElement> FiniteElements { get; }
+        public IReadOnlyCollection<Node> Nodes { get; }
+        public IReadOnlyCollection<Node> InteriorNodes { get; }
+        public IReadOnlyCollection<Node> BoundaryNodes { get; }
+        public IReadOnlyCollection<FiniteElement> FiniteElements { get; }
 
         public Mesh(int horizontalPointCount, int verticalPointCount, Rectangle rectangle)
         {
@@ -73,13 +74,5 @@ namespace FEMSharp.FEM2D
 
         public bool Contains(Vector2 point)
             => FiniteElements.Any(fe => fe.Contains(point));
-
-        public double Integrate(IFunction<Vector2, double> function)
-        {
-            double output = 0;
-            foreach (var finiteElement in FiniteElements)
-                ;//output += finiteElement.Integrate(function);
-            return output;
-        }
     }
 }

@@ -1,12 +1,13 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace FEMSharp.FEM2D
 {
     internal interface IMesh
     {
-        ReadOnlyCollection<Node> Nodes { get; }
-        ReadOnlyCollection<Node> InteriorNodes { get; }
-        ReadOnlyCollection<Node> BoundaryNodes { get; }
-        ReadOnlyCollection<FiniteElement> FiniteElements { get; }
+        IReadOnlyCollection<Node> Nodes { get; }
+        IReadOnlyCollection<Node> InteriorNodes { get; }
+        IReadOnlyCollection<Node> BoundaryNodes { get; }
+        IReadOnlyCollection<FiniteElement> FiniteElements { get; }
     }
 }

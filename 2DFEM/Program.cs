@@ -4,7 +4,7 @@
     {
         private static void Main(string[] args)
         {
-            FEM3DProgram.Run();
+            FEM2DProgram.Run();
         }
     }
 }

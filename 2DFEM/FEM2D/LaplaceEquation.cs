@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace FEMSharp.FEM2D
@@ -37,7 +38,7 @@ namespace FEMSharp.FEM2D
             Initialize();
             CalculateMatrixAndRHS();
             SolveMatrix();
-            OutputError();
+            Output();
 
             StopAndShowTaskTime("Total");
         }
@@ -46,7 +47,7 @@ namespace FEMSharp.FEM2D
         {
             StartMeasuringTaskTime("Initialization");
 
-            mesh = new MeshFromFile("./square.mesh");
+            mesh = new MeshFromFile("square.mesh");
             interiorNodesCount = mesh.InteriorNodes.Count;
             var boundaryNodesCount = mesh.BoundaryNodes.Count;
             A = new Matrix(interiorNodesCount, interiorNodesCount);
@@ -119,57 +120,45 @@ namespace FEMSharp.FEM2D
             StopAndShowTaskTime("Matrix solution");
         }
 
-        private void OutputError()
+        private void Output()
         {
-            var point = new Vector2(0.40594, 0.52323);
-            // Some random point inside the mesh.
-            double exactSolution = u(point),
-                   approxSolution = 0;
+            using (var solutionFile = new StreamWriter($"square.sol"))
+            {
+                solutionFile.WriteLine(
+$@"MeshVersionFormatted 1
 
-            foreach (var finiteElement in mesh.FiniteElements)
-                if (finiteElement.Contains(point))
+Dimension 2
+
+SolAtVertices
+{mesh.Nodes.Count}
+2 2 1
+");
+                foreach (var node in mesh.Nodes)
                 {
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            approxSolution += node.Phi(point) * result[node.Index];
-                        else
-                            approxSolution += node.Phi(point) * boundary[node.Index];
-                    break;
+                    var valueAtNode = node.IsInside ? result[node.Index] : boundary[node.Index];
+                    solutionFile.WriteLine($"{valueAtNode} {node.Position.x} {node.Position.y}");
                 }
 
-            ShowPointError(point, exactSolution, approxSolution);
+                solutionFile.WriteLine(
+$@"
+SolAtTriangles
+0
+1 2
 
-            double squareError = 0;
-            foreach (var finiteElement in mesh.FiniteElements)
-            {
-                Func<Vector2, double> error = v =>
-                {
-                    double u0 = u(v),
-                           uh0 = 0;
-
-                    foreach (var node in finiteElement.Nodes)
-                        if (node.IsInside)
-                            uh0 += node.Phi(v) * result[node.Index];
-                        else
-                            uh0 += node.Phi(v) * boundary[node.Index];
-                    return (u0 - uh0) * (u0 - uh0);
-                };
-                squareError += Calculator.Integrate(error, finiteElement);
+End");
             }
-
-            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
         }
 
         private void StartMeasuringTaskTime(string taskName)
         {
-            Stopwatch stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
             taskTimers.Add(taskName, stopwatch);
         }
 
         private void StopAndShowTaskTime(string taskName)
         {
-            Stopwatch stopwatch = taskTimers[taskName];
+            var stopwatch = taskTimers[taskName];
             stopwatch.Stop();
             taskTimers.Remove(taskName);
 
@@ -182,13 +171,6 @@ namespace FEMSharp.FEM2D
             Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count()}");
             Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count()}");
             Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count()}");
-        }
-
-        private void ShowPointError(Vector2 point, double exact, double approx)
-        {
-            Console.WriteLine($"Exact solution at  {point}: {exact}");
-            Console.WriteLine($"Approx solution at {point}: {approx}");
-            Console.WriteLine($"The error at point {point}: {approx - exact}");
         }
     }
 }

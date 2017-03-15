@@ -1,23 +1,28 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
 namespace FEMSharp
 {
-    class Vector
+    internal sealed class Vector
     {
-        private readonly double[] items;
+        private readonly double[] elements;
         private double? norm;
 
         public int Length { get; }
         public double Norm => GetNorm();
+        public double this[int index] => elements[index];
 
-        public double this[int i] => items[i];
-
-        public Vector(double[] doubleArray)
+        public Vector(double[] elements)
         {
-            this.Length = doubleArray.Length;
-            this.items = new double[Length];
+            if (elements == null)
+                throw new ArgumentException("Input is null.");
+
+            this.Length = elements.Length;
+            this.elements = new double[Length];
             for (int i = 0; i < Length; i++)
-                items[i] = doubleArray[i];
+                this.elements[i] = elements[i];
 
             this.norm = null;
         }
@@ -27,61 +32,77 @@ namespace FEMSharp
             if (!norm.HasValue)
             {
                 double squareNorm = 0;
-                foreach (var item in items)
+                foreach (var item in elements)
                     squareNorm += item * item;
                 norm =  Math.Sqrt(squareNorm);
             }
             return norm.Value;
         }
 
-        public static Vector operator +(Vector v1, Vector v2)
+        public static Vector operator +(Vector vector1, Vector vector2)
         {
-            int length = v1.Length;
-            if (v2.Length != length)
+            int length = vector1.Length;
+            if (vector2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double[] output = new double[length];
             for (int i = 0; i < length; i++)
-                output[i] = v1[i] + v2[i];
+                output[i] = vector1[i] + vector2[i];
 
             return new Vector(output);
         }
 
-        public static Vector operator -(Vector v1, Vector v2)
+        public static Vector operator -(Vector vector1, Vector vector2)
         {
-            int length = v1.Length;
-            if (v2.Length != length)
+            int length = vector1.Length;
+            if (vector2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double[] output = new double[length];
             for (int i = 0; i < length; i++)
-                output[i] = v1[i] - v2[i];
+                output[i] = vector1[i] - vector2[i];
 
             return new Vector(output);
         }
 
-        public static Vector operator *(double d, Vector v)
+        public static Vector operator *(double scalar, Vector vector)
         {
-            int length = v.Length;
+            int length = vector.Length;
 
             double[] output = new double[length];
             for (int i = 0; i < length; i++)
-                output[i] = d * v[i];
+                output[i] = scalar * vector[i];
 
             return new Vector(output);
         }
 
-        public static double Dot(Vector v1, Vector v2)
+        public static double Dot(Vector vector1, Vector vector2)
         {
-            int length = v1.Length;
-            if (v2.Length != length)
+            int length = vector1.Length;
+            if (vector2.Length != length)
                 throw new ArgumentException("Vector size must match.");
 
             double output = 0;
             for (int i = 0; i < length; i++)
-                output += v1[i] * v2[i];
+                output += vector1[i] * vector2[i];
 
             return output;
+        }
+
+        public static Vector Normalize(Vector vector)
+            => (1 / vector.Norm) * vector;
+
+        public override string ToString()
+            // TODO: Cache.
+        {
+            Debug.Assert(elements != null);
+            if (elements.Length == 0)
+                return "()";
+
+            var output = new StringBuilder($"({elements[0]:F3}");
+            foreach (var element in elements.Skip(1))
+                output.Append($", {element:F3}");
+            return output.Append(")").ToString();
         }
     }
 }

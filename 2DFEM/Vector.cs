@@ -9,6 +9,7 @@ namespace FEMSharp
     {
         private readonly double[] elements;
         private double? norm;
+        private string representation = null;
 
         public int Length { get; }
         public double Norm => GetNorm();
@@ -34,7 +35,7 @@ namespace FEMSharp
                 double squareNorm = 0;
                 foreach (var item in elements)
                     squareNorm += item * item;
-                norm =  Math.Sqrt(squareNorm);
+                norm = Math.Sqrt(squareNorm);
             }
             return norm.Value;
         }
@@ -93,16 +94,19 @@ namespace FEMSharp
             => (1 / vector.Norm) * vector;
 
         public override string ToString()
-            // TODO: Cache.
         {
-            Debug.Assert(elements != null);
-            if (elements.Length == 0)
-                return "()";
+            if (representation == null)
+            {
+                Debug.Assert(elements != null);
+                if (elements.Length == 0)
+                    return "()";
 
-            var output = new StringBuilder($"({elements[0]:F3}");
-            foreach (var element in elements.Skip(1))
-                output.Append($", {element:F3}");
-            return output.Append(")").ToString();
+                var output = new StringBuilder($"({elements[0]:F3}");
+                foreach (var element in elements.Skip(1))
+                    output.Append($", {element:F3}");
+                representation = output.Append(")").ToString();
+            }
+            return representation;
         }
     }
 }

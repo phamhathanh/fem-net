@@ -56,6 +56,7 @@ namespace FEMSharp
         }
 
         public static double Integrate(Func<Vector2, double> function, FEM2D.FiniteElement finiteElement)
+        // TODO: Use finite element function.
         {
             // Gaussian quadrature coefficents
             var w = new[] { 0.225,
@@ -97,6 +98,8 @@ namespace FEMSharp
         }
 
         public static double Integrate(Func<Vector3, double> function, FEM3D.FiniteElement finiteElement)
+        // TODO: Use finite element function.
+        // TODO: Abstraction.
         {
             double w0 = -74.0 / 5625,
                     w1 = 343.0 / 45000,

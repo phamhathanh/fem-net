@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace FEMSharp.FEM2D
 {
-    internal class FiniteElement
+    internal class P1FiniteElement : IFiniteElement
     {
-        public class Node
+        public class FENode : IFENode
         {
             public Vector2 Position { get; }
             public int Index { get; }
@@ -15,7 +15,7 @@ namespace FEMSharp.FEM2D
             public Func<Vector2, double> Phi { get; }
             public Func<Vector2, Vector2> GradPhi { get; }
 
-            public Node(Vector2 thisNode, Vector2 thatNode, Vector2 thatOtherNode,
+            public FENode(Vector2 thisNode, Vector2 thatNode, Vector2 thatOtherNode,
                         int index, bool isInside)
             {
                 Position = thisNode;
@@ -37,26 +37,14 @@ namespace FEMSharp.FEM2D
             }
         }
 
-        public ReadOnlyCollection<Node> Nodes { get; }
+        public ReadOnlyCollection<IFENode> Nodes { get; }
 
-        public FiniteElement(FEM2D.Node node0, FEM2D.Node node1, FEM2D.Node node2)
+        public P1FiniteElement(Node node0, Node node1, Node node2)
         {
-            var feNode0 = new Node(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
-            var feNode1 = new Node(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
-            var feNode2 = new Node(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
-            Nodes = new ReadOnlyCollection<Node>(new[] { feNode0, feNode1, feNode2 });
-        }
-
-        public double GetValueOfFunctionAtPoint(Vector coefficients, Vector2 point)
-        {
-            if (!this.Contains(point))
-                throw new ArgumentException();
-
-            double sum = 0;
-            foreach (var node in Nodes)
-                if (node.IsInside)
-                    sum += node.Phi(point) * coefficients[node.Index];
-            return sum;
+            var feNode0 = new FENode(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
+            var feNode1 = new FENode(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
+            var feNode2 = new FENode(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
+            Nodes = new ReadOnlyCollection<IFENode>(new[] { feNode0, feNode1, feNode2 });
         }
 
         public bool Contains(Vector2 point)

@@ -55,7 +55,7 @@ namespace FEMSharp
             return new CGResult(u, iterations, error);
         }
 
-        public static double Integrate(Func<Vector2, double> function, FEM2D.FiniteElement finiteElement)
+        public static double Integrate(Func<Vector2, double> function, IFiniteElement finiteElement)
         // TODO: Use finite element function.
         {
             // Gaussian quadrature coefficents

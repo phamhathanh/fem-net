@@ -38,7 +38,7 @@ namespace FEMSharp
             StartMeasuringTaskTime("Total");
 
             StartMeasuringTaskTime("Read mesh");
-            var mesh = new MeshFromFile("square.mesh");
+            var mesh = new P1MeshFromFile("square.mesh");
             ShowMeshParameters(mesh);
             StopAndShowTaskTime("Read mesh");
 

@@ -21,6 +21,9 @@ namespace FEMSharp.FEM2D
         public static Vector2 operator *(double scalar, Vector2 vector)
             => new Vector2(scalar * vector.x, scalar * vector.y);
 
+        public static Vector2 operator /(Vector2 vector, double scalar)
+            => new Vector2(vector.x / scalar, vector.y / scalar);
+
         public static double Dot(Vector2 vector1, Vector2 vector2)
             => vector1.x * vector2.x + vector1.y * vector2.y;
 

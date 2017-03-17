@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace FEMSharp.FEM2D
 {
-    internal class MeshFromFile : IMesh
+    internal class P1MeshFromFile : IMesh
     {
         private List<Node> nodes;
         public IReadOnlyCollection<Node> Nodes => nodes.AsReadOnly();
         public IReadOnlyCollection<Node> InteriorNodes { get; }
         public IReadOnlyCollection<Node> BoundaryNodes { get; }
-        public IReadOnlyCollection<FiniteElement> FiniteElements { get; }
+        public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
-        public MeshFromFile(string path)
+        public P1MeshFromFile(string path)
         {
             using (var reader = new StreamReader(path))
             {
@@ -64,10 +64,10 @@ namespace FEMSharp.FEM2D
                 int feCount = int.Parse(rawString);
 
                 reader.ReadLine();
-                var fes = new FiniteElement[feCount];
+                var fes = new P1FiniteElement[feCount];
                 for (int i = 0; i < feCount; i++)
                     fes[i] = ReadFiniteElement(reader.ReadLine());
-                FiniteElements = new ReadOnlyCollection<FiniteElement>(fes);
+                FiniteElements = new ReadOnlyCollection<P1FiniteElement>(fes);
             }
         }
 
@@ -84,14 +84,15 @@ namespace FEMSharp.FEM2D
             => node.x == 0 || node.x == 1 || node.y == 0 || node.y == 1;
         // TODO: Read from file.
 
-        private FiniteElement ReadFiniteElement(string rawString)
+        private P1FiniteElement ReadFiniteElement(string rawString)
         // TODO: Exception.
         {
             var items = rawString.Split(' ');
             int i = int.Parse(items[0]) - 1,
                 j = int.Parse(items[1]) - 1,
                 k = int.Parse(items[2]) - 1;
-            return new FiniteElement(nodes[i], nodes[j], nodes[k]);
+
+            return new P1FiniteElement(nodes[i], nodes[j], nodes[k]);
         }
     }
 }

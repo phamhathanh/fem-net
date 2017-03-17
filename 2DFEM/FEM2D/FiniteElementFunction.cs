@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace FEMSharp.FEM2D
-{
+{/*
     class FiniteElementFunction : IFunction<Vector2, double>
     {
         private readonly Mesh mesh;
@@ -33,5 +33,5 @@ namespace FEMSharp.FEM2D
 
             throw new Exception("Programming error.");
         }
-    }
+    }*/
 }

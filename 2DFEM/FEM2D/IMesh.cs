@@ -8,6 +8,6 @@ namespace FEMSharp.FEM2D
         IReadOnlyCollection<Node> Nodes { get; }
         IReadOnlyCollection<Node> InteriorNodes { get; }
         IReadOnlyCollection<Node> BoundaryNodes { get; }
-        IReadOnlyCollection<FiniteElement> FiniteElements { get; }
+        IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
     }
 }

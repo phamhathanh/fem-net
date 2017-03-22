@@ -8,21 +8,11 @@ namespace FEMSharp.FEM2D
 {
     internal class P2MeshFromFile : IMesh
     {
-        private List<Node> nodes;
+        private List<Vertex> nodes;
         private int interiorIndex = 0,
                     boundaryIndex = 0;
-        public IReadOnlyCollection<Node> Nodes => nodes.AsReadOnly();
-        public IReadOnlyCollection<Node> InteriorNodes { get; }
-        public IReadOnlyCollection<Node> BoundaryNodes { get; }
+        public IReadOnlyCollection<Vertex> Vertices => nodes.AsReadOnly();
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
-
-        public IReadOnlyCollection<int> References
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public P2MeshFromFile(string path)
         // TODO: Remove FromFile duplication.
@@ -38,7 +28,7 @@ namespace FEMSharp.FEM2D
                 int nodeCount = int.Parse(rawString);
 
                 reader.ReadLine();
-                var nodes = new Node[nodeCount];
+                var nodes = new Vertex[nodeCount];
                 for (int i = 0; i < nodeCount; i++)
                 {
                     rawString = reader.ReadLine();
@@ -62,7 +52,7 @@ namespace FEMSharp.FEM2D
                         index = boundaryIndex;
                         boundaryIndex++;
                     }
-                    nodes[i] = new Node(position, reference);
+                    nodes[i] = new Vertex(position, reference);
                 }
                 this.nodes = nodes.ToList();
 
@@ -78,13 +68,6 @@ namespace FEMSharp.FEM2D
                 for (int i = 0; i < feCount; i++)
                     fes[i] = ReadFiniteElement(reader.ReadLine());
                 FiniteElements = new ReadOnlyCollection<IFiniteElement>(fes);
-
-                BoundaryNodes = (from node in Nodes
-                                 where IsOnBoundary(node.Position)
-                                 select node).ToList().AsReadOnly();
-                InteriorNodes = (from node in Nodes
-                                 where !IsOnBoundary(node.Position)
-                                 select node).ToList().AsReadOnly();
                 // TODO: Prevent copying by using own implementation of IReadOnlyCollection.
             }
         }
@@ -102,7 +85,7 @@ namespace FEMSharp.FEM2D
             => node.x == 0 || node.x == 1 || node.y == 0 || node.y == 1;
         // TODO: Read from file.
 
-        private FiniteElement ReadFiniteElement(string rawString)
+        private P2Element ReadFiniteElement(string rawString)
         // TODO: Exception.
         {
             var items = rawString.Split(' ');
@@ -110,7 +93,7 @@ namespace FEMSharp.FEM2D
                 j = int.Parse(items[1]) - 1,
                 k = int.Parse(items[2]) - 1;
 
-            Node node0 = nodes[i],
+            Vertex node0 = nodes[i],
                 node1 = nodes[j],
                 node2 = nodes[k];
             Vector2 p0 = node0.Position,
@@ -124,20 +107,20 @@ namespace FEMSharp.FEM2D
             var node12 = AddNode(p4, false);//ode1.IsInside && node2.IsInside);
             var node20 = AddNode(p5, false);//node2.IsInside && node0.IsInside);
             throw new NotImplementedException();
-            return new FiniteElement(node0, node1, node2, node01, node12, node20);
+            return new P2Element(node0, node1, node2, node01, node12, node20);
         }
 
-        private Node AddNode(Vector2 position, bool isInside)
+        private Vertex AddNode(Vector2 position, bool isInside)
         {
-            Node node;
+            Vertex node;
             if (isInside)
             {
-                node = new Node(position, 0);//isInside);
+                node = new Vertex(position, 0);//isInside);
                 interiorIndex++;
             }
             else
             {
-                node = new Node(position, 0);// isInside);
+                node = new Vertex(position, 0);// isInside);
                 boundaryIndex++;
             }
             throw new NotImplementedException();
@@ -145,28 +128,28 @@ namespace FEMSharp.FEM2D
             return node;
         }
 
-        public class FiniteElement : IFiniteElement
+        public sealed class P2Element : FiniteElement
         {
-            public ReadOnlyCollection<IFENode> Nodes { get; }
+            public override ReadOnlyCollection<INode> Nodes { get; }
 
-            public class FENode : IFENode
+            public class FENode : INode
             {
-                public Node Vertex { get; set; }
+                public Vertex Vertex { get; set; }
 
                 public Func<Vector2, double> Phi { get; set; }
                 public Func<Vector2, Vector2> GradPhi { get; set; }
 
-                public FENode(Node node)
+                public FENode(Vertex node)
                 {
                     Vertex = node;
                 }
             }
 
-            public FiniteElement(Node node0, Node node1, Node node2, Node node01, Node node12, Node node20)
+            public P2Element(Vertex node0, Vertex node1, Vertex node2, Vertex node01, Vertex node12, Vertex node20)
             {
-                var temp0 = new P1FiniteElement.FENode(node0, node1.Position, node2.Position, node0.Index, node0.Reference);
-                var temp1 = new P1FiniteElement.FENode(node1, node2.Position, node0.Position, node1.Index, node1.Reference);
-                var temp2 = new P1FiniteElement.FENode(node2, node0.Position, node1.Position, node2.Index, node2.Reference);
+                var temp0 = new P1Element.Node(node0, node1, node2);
+                var temp1 = new P1Element.Node(node1, node2, node0);
+                var temp2 = new P1Element.Node(node2, node0, node1);
                 throw new NotImplementedException();
                 Func<Vector2, Vector2> gradLambda0 = temp0.GradPhi,
                                         gradLambda1 = temp1.GradPhi,
@@ -207,11 +190,8 @@ namespace FEMSharp.FEM2D
                     GradPhi = v => 4 * (lambda2(v) * gradLambda0(v) + lambda0(v) * gradLambda2(v))
                 };
 
-                Nodes = new ReadOnlyCollection<IFENode>(new[] { feNode0, feNode1, feNode2, feNode01, feNode12, feNode20 });
+                Nodes = new ReadOnlyCollection<INode>(new[] { feNode0, feNode1, feNode2, feNode01, feNode12, feNode20 });
             }
-
-            public bool Contains(Vector2 point)
-                => Nodes.All(node => node.Phi(point) >= 0);
         }
     }
 }

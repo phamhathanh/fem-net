@@ -10,7 +10,7 @@ namespace FEMSharp.FEM2D
         private readonly Func<Vector2, double> f;
         private readonly Dictionary<int, Func<Vector2, double>> boundaryConditions;
         
-        private int interiorNodeCount, boundaryNodeCount;
+        private int interiorVertexCount, boundaryVertexCount;
 
         private Matrix A, Ag;
         private Vector rhs;
@@ -38,37 +38,37 @@ namespace FEMSharp.FEM2D
         {
             var boundary = new List<double>();
 
-            interiorNodeCount = 0;
-            boundaryNodeCount = 0;
-            foreach (var node in mesh.Nodes)
+            interiorVertexCount = 0;
+            boundaryVertexCount = 0;
+            foreach (var vertex in mesh.Vertices)
             {
-                if (IsInside(node))
+                if (IsInside(vertex))
                 {
-                    node.Index = interiorNodeCount;
-                    interiorNodeCount++;
+                    vertex.Index = interiorVertexCount;
+                    interiorVertexCount++;
                 }
                 else
                 {
-                    var value = boundaryConditions[node.Reference](node.Position);
+                    var value = boundaryConditions[vertex.Reference](vertex.Position);
                     boundary.Add(value);
-                    node.Index = boundaryNodeCount;
-                    boundaryNodeCount++;
+                    vertex.Index = boundaryVertexCount;
+                    boundaryVertexCount++;
                 }
             }
             return new Vector(boundary);
         }
 
-        private bool IsInside(Node node)
-            => !boundaryConditions.ContainsKey(node.Reference);
+        private bool IsInside(Vertex vertex)
+            => !boundaryConditions.ContainsKey(vertex.Reference);
 
-        private bool IsInside(IFENode node)
-            => !boundaryConditions.ContainsKey(node.Vertex.Reference);
+        private bool IsInside(INode node)
+            => IsInside(node.Vertex);
 
         private void CalculateMatrixAndRHS()
         {
-            A = new Matrix(interiorNodeCount, interiorNodeCount);
-            Ag = new Matrix(interiorNodeCount, boundaryNodeCount);
-            var rhs = new double[interiorNodeCount];
+            A = new Matrix(interiorVertexCount, interiorVertexCount);
+            Ag = new Matrix(interiorVertexCount, boundaryVertexCount);
+            var rhs = new double[interiorVertexCount];
 
             foreach (var finiteElement in mesh.FiniteElements)
             {
@@ -106,9 +106,9 @@ namespace FEMSharp.FEM2D
         {
             var epsilon = 1e-12;
             var result = Calculator.Solve(A, rhs - Ag * boundary, epsilon).vector;
-            var solution = new double[mesh.Nodes.Count];
+            var solution = new double[mesh.Vertices.Count];
             int i = 0;
-            foreach (var node in mesh.Nodes)
+            foreach (var node in mesh.Vertices)
             {
                 if (IsInside(node))
                     solution[i] = result[node.Index];

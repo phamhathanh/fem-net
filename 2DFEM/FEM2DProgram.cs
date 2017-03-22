@@ -93,13 +93,13 @@ $@"MeshVersionFormatted 1
 Dimension 2
 
 SolAtVertices
-{mesh.Nodes.Count}
+{mesh.Vertices.Count}
 2 2 1
 ");
                 int i = 0;
-                foreach (var node in mesh.Nodes)
+                foreach (var vertex in mesh.Vertices)
                 {
-                    solutionFile.WriteLine($"{solution[i]} {node.Position.x} {node.Position.y}");
+                    solutionFile.WriteLine($"{solution[i]} {vertex.Position.x} {vertex.Position.y}");
                     i++;
                 }
 
@@ -153,7 +153,7 @@ End");
 
         private static void ShowMeshParameters(IMesh mesh)
         {
-            Console.WriteLine($"Number of vertices: {mesh.Nodes.Count}");
+            Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
             Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count}");
         }
     }

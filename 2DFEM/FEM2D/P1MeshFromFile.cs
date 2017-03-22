@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -8,8 +7,8 @@ namespace FEMSharp.FEM2D
 {
     internal class P1MeshFromFile : IMesh
     {
-        private List<Node> nodes;
-        public IReadOnlyCollection<Node> Nodes => nodes.AsReadOnly();
+        private List<Vertex> vertices;
+        public IReadOnlyCollection<Vertex> Vertices => vertices.AsReadOnly();
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
         public P1MeshFromFile(string path)
@@ -22,10 +21,10 @@ namespace FEMSharp.FEM2D
                 while (rawString != "Vertices");
 
                 rawString = reader.ReadLine();
-                int nodeCount = int.Parse(rawString);
+                int vertexCount = int.Parse(rawString);
 
-                var nodes = new Node[nodeCount];
-                for (int i = 0; i < nodeCount; i++)
+                var vertices = new Vertex[vertexCount];
+                for (int i = 0; i < vertexCount; i++)
                 {
                     rawString = reader.ReadLine();
                     if (rawString == "")
@@ -41,9 +40,9 @@ namespace FEMSharp.FEM2D
                     // TODO: Format exception.
 
                     var position = new Vector2(x, y);
-                    nodes[i] = new Node(position, reference);
+                    vertices[i] = new Vertex(position, reference);
                 }
-                this.nodes = nodes.ToList();
+                this.vertices = vertices.ToList();
                 // TODO: Prevent copying by using own implementation of IReadOnlyCollection.
 
                 do
@@ -53,7 +52,7 @@ namespace FEMSharp.FEM2D
                 rawString = reader.ReadLine();
                 int feCount = int.Parse(rawString);
 
-                var fes = new P1FiniteElement[feCount];
+                var fes = new P1Element[feCount];
                 for (int i = 0; i < feCount; i++)
                 {
                     rawString = reader.ReadLine();
@@ -64,11 +63,11 @@ namespace FEMSharp.FEM2D
                     }
                     fes[i] = ReadFiniteElement(rawString);
                 }
-                FiniteElements = new ReadOnlyCollection<P1FiniteElement>(fes);
+                FiniteElements = new ReadOnlyCollection<P1Element>(fes);
             }
         }
 
-        private P1FiniteElement ReadFiniteElement(string rawString)
+        private P1Element ReadFiniteElement(string rawString)
         // TODO: Exception.
         {
             var items = rawString.Split(' ');
@@ -76,7 +75,7 @@ namespace FEMSharp.FEM2D
                 j = int.Parse(items[1]) - 1,
                 k = int.Parse(items[2]) - 1;
 
-            return new P1FiniteElement(nodes[i], nodes[j], nodes[k]);
+            return new P1Element(vertices[i], vertices[j], vertices[k]);
         }
     }
 }

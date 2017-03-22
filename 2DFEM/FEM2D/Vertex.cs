@@ -2,7 +2,7 @@
 
 namespace FEMSharp.FEM2D
 {
-    internal class Node
+    internal class Vertex
     {
         public Vector2 Position { get; }
         public int Index { get; set; }
@@ -10,7 +10,7 @@ namespace FEMSharp.FEM2D
 
         public int Reference { get; }
 
-        public Node(Vector2 position, int reference)
+        public Vertex(Vector2 position, int reference)
         {
             Position = position;
             Reference = reference;

@@ -4,7 +4,7 @@ namespace FEMSharp.FEM2D
 {
     internal interface IMesh
     {
-        IReadOnlyCollection<Node> Nodes { get; }
+        IReadOnlyCollection<Vertex> Vertices { get; }
         IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
     }
 }

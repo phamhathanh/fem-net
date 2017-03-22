@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FEM2D\FiniteElementFunction.cs" />
+    <Compile Include="FEM2D\FiniteElement.cs" />
     <Compile Include="FEM2D\P2MeshFromFile.cs" />
     <Compile Include="FEM2D\P1BubbleMeshFromFile.cs" />
     <Compile Include="FEM2D\IFiniteElement.cs" />
@@ -51,7 +52,7 @@
     <Compile Include="FEM3D\FiniteElement.cs" />
     <Compile Include="FEM2D\Function.cs" />
     <Compile Include="Calculator.cs" />
-    <Compile Include="FEM2D\P1FiniteElement.cs" />
+    <Compile Include="FEM2D\P1Element.cs" />
     <Compile Include="FEM2D\IFunction.cs" />
     <Compile Include="FEM2D\IMesh.cs" />
     <Compile Include="FEM3D\BiologicalEquation.cs" />

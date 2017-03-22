@@ -4,11 +4,11 @@ namespace FEMSharp.FEM2D
 {
     class Triangle
     {
-        private readonly Node[] nodes;
+        private readonly Vertex[] nodes;
 
-        public Triangle(Node node1, Node node2, Node node3)
+        public Triangle(Vertex node1, Vertex node2, Vertex node3)
         {
-            this.nodes = new Node[] { node1, node2, node3 };
+            this.nodes = new Vertex[] { node1, node2, node3 };
         }
 
         public double Area

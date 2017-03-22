@@ -47,6 +47,7 @@
     <Compile Include="FEM2D\P2MeshFromFile.cs" />
     <Compile Include="FEM2D\P1BubbleMeshFromFile.cs" />
     <Compile Include="FEM2D\IFiniteElement.cs" />
+    <Compile Include="FEM2D\Timer.cs" />
     <Compile Include="FEM2D\Triangle.cs" />
     <Compile Include="FEM3DProgram.cs" />
     <Compile Include="FEM3D\FiniteElementFunction.cs" />

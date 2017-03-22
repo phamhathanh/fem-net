@@ -2,14 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using static System.Math;
 
 namespace FEMSharp
 {
     internal static class FEM2DProgram
     {
-        private static readonly Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
         private const double a0 = 0;
 
         private static double F(Vector2 v)
@@ -32,26 +30,26 @@ namespace FEMSharp
         public static void Run()
         {
             Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
-            StartMeasuringTaskTime("Total");
+            var totalTimer = StartMeasuringTaskTime("Total");
 
             var problemName = "heat2_cs";
 
-            StartMeasuringTaskTime("Read mesh");
+            var meshTimer = StartMeasuringTaskTime("Read mesh");
             var mesh = InOut.LoadMeshFromFile($"{problemName}.mesh", new P1Element.Factory());
             ShowMeshParameters(mesh);
-            StopAndShowTaskTime("Read mesh");
+            StopAndShowTaskTime(meshTimer);
 
             var boundaryConditions = InOut.ReadBoundaryConditions("DEFAULT.stokes");
 
-            StartMeasuringTaskTime("Calculation");
+            var calculationTimer = StartMeasuringTaskTime("Calculation");
             var laplaceEquation = new LaplaceEquation(mesh, a0, F, boundaryConditions);
             var solution = laplaceEquation.Solve();
-            StopAndShowTaskTime("Calculation");
+            StopAndShowTaskTime(calculationTimer);
 
             InOut.WriteSolutionToFile($"{problemName}.sol", mesh, solution);
             //OutputError(mesh, solution);
 
-            StopAndShowTaskTime("Total");
+            StopAndShowTaskTime(totalTimer);
             Console.ReadLine();
         }
 
@@ -75,22 +73,17 @@ namespace FEMSharp
             Console.WriteLine($"L2 error in domain: {Sqrt(squareError)}");
         }
 
-        private static void StartMeasuringTaskTime(string taskName)
-        // TODO: Encapsulate into own timer class.
+        private static Timer StartMeasuringTaskTime(string taskName)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            taskTimers.Add(taskName, stopwatch);
+            var timer = new Timer(taskName);
+            timer.Start();
+            return timer;
         }
 
-        private static void StopAndShowTaskTime(string taskName)
+        private static void StopAndShowTaskTime(Timer timer)
         {
-            var stopwatch = taskTimers[taskName];
-            stopwatch.Stop();
-            taskTimers.Remove(taskName);
-
-            TimeSpan taskTime = stopwatch.Elapsed;
-            Console.WriteLine($"{taskName} time: {taskTime.TotalSeconds:F3} sec");
+            timer.Stop();
+            Console.WriteLine($"{timer.Name} time: {timer.Elapsed.TotalSeconds:F3} sec");
         }
 
         private static void ShowMeshParameters(IMesh mesh)

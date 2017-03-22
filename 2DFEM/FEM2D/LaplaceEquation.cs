@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace FEMSharp.FEM2D
 {
@@ -6,21 +7,24 @@ namespace FEMSharp.FEM2D
     {
         private readonly IMesh mesh;
         private readonly double a0;
-        private readonly Func<Vector2, double> f, g;
+        private readonly Func<Vector2, double> f;
+        private readonly Dictionary<int, Func<Vector2, double>> boundaryConditions;
+        
+        private int interiorNodeCount, boundaryNodeCount;
 
         private Matrix A, Ag;
-
         private Vector rhs;
+
         // TODO: Change to FE function.
 
         // -Laplace(u) + a0 * u = f
         // u = g on boundary
-        public LaplaceEquation(IMesh mesh, double a0, Func<Vector2, double> f, Func<Vector2, double> g)
+        public LaplaceEquation(IMesh mesh, double a0, Func<Vector2, double> f, Dictionary<int, Func<Vector2, double>> boundaryConditions)
         {
             this.mesh = mesh;
             this.a0 = a0;
             this.f = f;
-            this.g = g;
+            this.boundaryConditions = boundaryConditions;
         }
 
         public Vector Solve()
@@ -32,37 +36,50 @@ namespace FEMSharp.FEM2D
 
         private Vector CalculateBoundaryCondition()
         {
-            var m = mesh.BoundaryNodes.Count;
-            var boundary = new double[m];
+            var boundary = new List<double>();
+
+            interiorNodeCount = 0;
+            boundaryNodeCount = 0;
+            foreach (var node in mesh.Nodes)
             {
-                int i = 0;
-                foreach (var boundaryNode in mesh.BoundaryNodes)
+                if (IsInside(node))
                 {
-                    boundary[i] = g(boundaryNode.Position);
-                    i++;
+                    node.Index = interiorNodeCount;
+                    interiorNodeCount++;
+                }
+                else
+                {
+                    var value = boundaryConditions[node.Reference](node.Position);
+                    boundary.Add(value);
+                    node.Index = boundaryNodeCount;
+                    boundaryNodeCount++;
                 }
             }
             return new Vector(boundary);
         }
 
+        private bool IsInside(Node node)
+            => !boundaryConditions.ContainsKey(node.Reference);
+
+        private bool IsInside(IFENode node)
+            => !boundaryConditions.ContainsKey(node.Vertex.Reference);
+
         private void CalculateMatrixAndRHS()
         {
-            var n = mesh.InteriorNodes.Count;
-            var m = mesh.BoundaryNodes.Count;
-            A = new Matrix(n, n);
-            Ag = new Matrix(n, m);
-            var rhs = new double[n];
+            A = new Matrix(interiorNodeCount, interiorNodeCount);
+            Ag = new Matrix(interiorNodeCount, boundaryNodeCount);
+            var rhs = new double[interiorNodeCount];
 
             foreach (var finiteElement in mesh.FiniteElements)
             {
                 foreach (var node in finiteElement.Nodes)
-                    if (node.IsInside)
+                    if (IsInside(node))
                     {
-                        int I = node.Index;
+                        int I = node.Vertex.Index;
                         foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
+                            if (IsInside(otherNode))
                             {
-                                int J = otherNode.Index;
+                                int J = otherNode.Vertex.Index;
                                 A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
                                     + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
                             }
@@ -71,11 +88,11 @@ namespace FEMSharp.FEM2D
                     }
                     else
                     {
-                        int J = node.Index;
+                        int J = node.Vertex.Index;
                         foreach (var otherNode in finiteElement.Nodes)
-                            if (otherNode.IsInside)
+                            if (IsInside(otherNode))
                             {
-                                int I = otherNode.Index;
+                                int I = otherNode.Vertex.Index;
                                 Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
                                     + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
                             }
@@ -93,7 +110,7 @@ namespace FEMSharp.FEM2D
             int i = 0;
             foreach (var node in mesh.Nodes)
             {
-                if (node.IsInside)
+                if (IsInside(node))
                     solution[i] = result[node.Index];
                 else
                     solution[i] = boundary[node.Index];

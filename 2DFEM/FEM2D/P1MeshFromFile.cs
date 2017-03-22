@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,6 @@ namespace FEMSharp.FEM2D
     {
         private List<Node> nodes;
         public IReadOnlyCollection<Node> Nodes => nodes.AsReadOnly();
-        public IReadOnlyCollection<Node> InteriorNodes { get; }
-        public IReadOnlyCollection<Node> BoundaryNodes { get; }
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
         public P1MeshFromFile(string path)
@@ -25,35 +24,26 @@ namespace FEMSharp.FEM2D
                 rawString = reader.ReadLine();
                 int nodeCount = int.Parse(rawString);
 
-                reader.ReadLine();
                 var nodes = new Node[nodeCount];
-                int interiorIndex = 0,
-                    boundaryIndex = 0;
                 for (int i = 0; i < nodeCount; i++)
                 {
                     rawString = reader.ReadLine();
-                    var position = ReadPosition(rawString);
-                    var isInside = !IsOnBoundary(position);
-                    int index;
-                    if (isInside)
+                    if (rawString == "")
                     {
-                        index = interiorIndex;
-                        interiorIndex++;
+                        i--;
+                        continue;
                     }
-                    else
-                    {
-                        index = boundaryIndex;
-                        boundaryIndex++;
-                    }
-                    nodes[i] = new Node(position, index, isInside);
+
+                    var items = rawString.Split(' ');
+                    double x = double.Parse(items[0]),
+                        y = double.Parse(items[1]);
+                    int reference = int.Parse(items[2]);
+                    // TODO: Format exception.
+
+                    var position = new Vector2(x, y);
+                    nodes[i] = new Node(position, reference);
                 }
                 this.nodes = nodes.ToList();
-                BoundaryNodes = (from node in Nodes
-                                 where IsOnBoundary(node.Position)
-                                 select node).ToList().AsReadOnly();
-                InteriorNodes = (from node in Nodes
-                                 where !IsOnBoundary(node.Position)
-                                 select node).ToList().AsReadOnly();
                 // TODO: Prevent copying by using own implementation of IReadOnlyCollection.
 
                 do
@@ -63,26 +53,20 @@ namespace FEMSharp.FEM2D
                 rawString = reader.ReadLine();
                 int feCount = int.Parse(rawString);
 
-                reader.ReadLine();
                 var fes = new P1FiniteElement[feCount];
                 for (int i = 0; i < feCount; i++)
-                    fes[i] = ReadFiniteElement(reader.ReadLine());
+                {
+                    rawString = reader.ReadLine();
+                    if (rawString == "")
+                    {
+                        i--;
+                        continue;
+                    }
+                    fes[i] = ReadFiniteElement(rawString);
+                }
                 FiniteElements = new ReadOnlyCollection<P1FiniteElement>(fes);
             }
         }
-
-        private Vector2 ReadPosition(string rawString)
-        // TODO: Exception.
-        {
-            var items = rawString.Split(' ');
-            double x = double.Parse(items[0]),
-                y = double.Parse(items[1]);
-            return new Vector2(x, y);
-        }
-
-        private bool IsOnBoundary(Vector2 node)
-            => node.x == 0 || node.x == 1 || node.y == 0 || node.y == 1;
-        // TODO: Read from file.
 
         private P1FiniteElement ReadFiniteElement(string rawString)
         // TODO: Exception.

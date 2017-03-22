@@ -8,22 +8,17 @@ namespace FEMSharp.FEM2D
     {
         public class FENode : IFENode
         {
-            public Vector2 Position { get; }
-            public int Index { get; }
-            public bool IsInside { get; }
-
+            public Node Vertex { get; }
             public Func<Vector2, double> Phi { get; }
             public Func<Vector2, Vector2> GradPhi { get; }
 
-            public FENode(Vector2 thisNode, Vector2 thatNode, Vector2 thatOtherNode,
-                        int index, bool isInside)
+            public FENode(Node thisNode, Vector2 thatNode, Vector2 thatOtherNode,
+                        int index, int reference)
             {
-                Position = thisNode;
-                Index = index;
-                IsInside = isInside;
+                Vertex = thisNode;
 
                 // Linear interpolation, using Cramer's rule.
-                double x1 = thisNode.x, y1 = thisNode.y,
+                double x1 = thisNode.Position.x, y1 = thisNode.Position.y,
                     x2 = thatNode.x, y2 = thatNode.y,
                     x3 = thatOtherNode.x, y3 = thatOtherNode.y,
                     a = y3 - y2,
@@ -41,9 +36,9 @@ namespace FEMSharp.FEM2D
 
         public P1FiniteElement(Node node0, Node node1, Node node2)
         {
-            var feNode0 = new FENode(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
-            var feNode1 = new FENode(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
-            var feNode2 = new FENode(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
+            var feNode0 = new FENode(node0, node1.Position, node2.Position, node0.Index, node0.Reference);
+            var feNode1 = new FENode(node1, node2.Position, node0.Position, node1.Index, node1.Reference);
+            var feNode2 = new FENode(node2, node0.Position, node1.Position, node2.Index, node2.Reference);
             Nodes = new ReadOnlyCollection<IFENode>(new[] { feNode0, feNode1, feNode2 });
         }
 

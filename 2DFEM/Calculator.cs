@@ -83,9 +83,9 @@ namespace FEMSharp
                                         0.470142064105115089770441209513447600515853414537694801266074) };
 
             double sum = 0;
-            Vector2 x0 = finiteElement.Nodes[0].Position,
-                    u = finiteElement.Nodes[1].Position - x0,
-                    v = finiteElement.Nodes[2].Position - x0;
+            Vector2 x0 = finiteElement.Nodes[0].Vertex.Position,
+                    u = finiteElement.Nodes[1].Vertex.Position - x0,
+                    v = finiteElement.Nodes[2].Vertex.Position - x0;
 
             for (int i = 0; i < 7; i++)
             {

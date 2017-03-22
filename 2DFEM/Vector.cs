@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FEMSharp
 {
@@ -9,22 +8,17 @@ namespace FEMSharp
     {
         private readonly double[] elements;
         private double? norm;
-        private string representation = null;
 
-        public int Length { get; }
+        public int Length => elements.Length;
         public double Norm => GetNorm();
         public double this[int index] => elements[index];
 
-        public Vector(double[] elements)
+        public Vector(IEnumerable<double> elements)
         {
             if (elements == null)
                 throw new ArgumentException("Input is null.");
 
-            this.Length = elements.Length;
-            this.elements = new double[Length];
-            for (int i = 0; i < Length; i++)
-                this.elements[i] = elements[i];
-
+            this.elements = elements.ToArray();
             this.norm = null;
         }
 
@@ -92,21 +86,5 @@ namespace FEMSharp
 
         public static Vector Normalize(Vector vector)
             => (1 / vector.Norm) * vector;
-
-        public override string ToString()
-        {
-            if (representation == null)
-            {
-                Debug.Assert(elements != null);
-                if (elements.Length == 0)
-                    return "()";
-
-                var output = new StringBuilder($"({elements[0]:F3}");
-                foreach (var element in elements.Skip(1))
-                    output.Append($", {element:F3}");
-                representation = output.Append(")").ToString();
-            }
-            return representation;
-        }
     }
 }

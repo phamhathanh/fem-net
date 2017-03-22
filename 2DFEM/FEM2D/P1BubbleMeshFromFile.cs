@@ -15,6 +15,14 @@ namespace FEMSharp.FEM2D
         public IReadOnlyCollection<Node> BoundaryNodes { get; }
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
+        public IReadOnlyCollection<int> References
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public P1BubbleMeshFromFile(string path)
         {
             using (var reader = new StreamReader(path))
@@ -47,7 +55,8 @@ namespace FEMSharp.FEM2D
                         index = boundaryIndex;
                         boundaryIndex++;
                     }
-                    nodes[i] = new Node(position, index, isInside);
+                    nodes[i] = new Node(position, 0);//isInside);
+                    throw new NotImplementedException();
                 }
                 this.nodes = nodes.ToList();
 
@@ -95,7 +104,8 @@ namespace FEMSharp.FEM2D
                 j = int.Parse(items[1]) - 1,
                 k = int.Parse(items[2]) - 1;
 
-            var centerNode = new Node((nodes[i].Position + nodes[j].Position + nodes[k].Position) / 3, interiorIndex, true);
+            var centerNode = new Node((nodes[i].Position + nodes[j].Position + nodes[k].Position) / 3, 0);//true);
+            throw new NotImplementedException();
             interiorIndex++;
             nodes.Add(centerNode);
             return new FiniteElement(nodes[i], nodes[j], nodes[k], centerNode);
@@ -107,9 +117,7 @@ namespace FEMSharp.FEM2D
 
             public class FENode : IFENode
             {
-                public Vector2 Position { get; set; }
-                public int Index { get; set; }
-                public bool IsInside { get; set; }
+                public Node Vertex { get; set; }
 
                 public Func<Vector2, double> Phi { get; set; }
                 public Func<Vector2, Vector2> GradPhi { get; set; }
@@ -117,14 +125,13 @@ namespace FEMSharp.FEM2D
 
             public FiniteElement(Node node0, Node node1, Node node2, Node center)
             {
-                var feNode0 = new P1FiniteElement.FENode(node0.Position, node1.Position, node2.Position, node0.Index, node0.IsInside);
-                var feNode1 = new P1FiniteElement.FENode(node1.Position, node2.Position, node0.Position, node1.Index, node1.IsInside);
-                var feNode2 = new P1FiniteElement.FENode(node2.Position, node0.Position, node1.Position, node2.Index, node2.IsInside);
+                var feNode0 = new P1FiniteElement.FENode(node0, node1.Position, node2.Position, node0.Index, node0.Reference);
+                var feNode1 = new P1FiniteElement.FENode(node1, node2.Position, node0.Position, node1.Index, node1.Reference);
+                var feNode2 = new P1FiniteElement.FENode(node2, node0.Position, node1.Position, node2.Index, node2.Reference);
+                throw new NotImplementedException();
                 var feCenter = new FENode()
                 {
-                    Position = center.Position,
-                    Index = center.Index,
-                    IsInside = true,
+                    Vertex = center,
                     Phi = v => 27 * feNode0.Phi(v) * feNode1.Phi(v) * feNode2.Phi(v),
                     GradPhi = v =>
                     {

@@ -9,20 +9,16 @@ namespace FEMSharp
     internal static class FEM2DProgram
     {
         private static readonly Dictionary<string, Stopwatch> taskTimers = new Dictionary<string, Stopwatch>();
-
-        private const double a0 = 1;
-        private const int n = 127, m = n;
+        private const double a0 = 0;
 
         private static double F(Vector2 v)
         {
+            return 0;
             double x = v.x,
                    y = v.y;
 
             return -4 / ((x + y + 1) * (x + y + 1) * (x + y + 1)) + 2 * Math.PI * Math.PI * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + a0 * U(v);
         }
-
-        private static double G(Vector2 v)
-            => U(v);
 
         private static double U(Vector2 v)
         {
@@ -38,24 +34,58 @@ namespace FEMSharp
             StartMeasuringTaskTime("Total");
 
             StartMeasuringTaskTime("Read mesh");
-            var mesh = new P1MeshFromFile("square.mesh");
+            var mesh = new P1MeshFromFile("heat2_cs.mesh");
             ShowMeshParameters(mesh);
             StopAndShowTaskTime("Read mesh");
 
+            var boundaryConditions = ReadBoundaryConditions("DEFAULT.stokes");
+
             StartMeasuringTaskTime("Calculation");
-            var laplaceEquation = new LaplaceEquation(mesh, a0, F, G);
+            var laplaceEquation = new LaplaceEquation(mesh, a0, F, boundaryConditions);
             var solution = laplaceEquation.Solve();
             StopAndShowTaskTime("Calculation");
 
-            WriteSolutionToFile(mesh, solution);
+            WriteSolutionToFile("heat2_cs.sol", mesh, solution);
+            //OutputError(mesh, solution);
 
             StopAndShowTaskTime("Total");
             Console.ReadLine();
         }
 
-        private static void WriteSolutionToFile(IMesh mesh, Vector solution)
+        private static Dictionary<int, Func<Vector2, double>> ReadBoundaryConditions(string path)
         {
-            using (var solutionFile = new StreamWriter($"square.sol"))
+            Dictionary<int, Func<Vector2, double>> conditions;
+            using (var reader = new StreamReader(path))
+            {
+                string rawString;
+                do
+                    rawString = reader.ReadLine();
+                while (rawString != "dirichlet");
+
+                if (reader.EndOfStream)
+                    throw new NotImplementedException();
+                // TODO: other types of condition.
+
+                rawString = reader.ReadLine();
+                int conditionCount = int.Parse(rawString);
+                conditions = new Dictionary<int, Func<Vector2, double>>(conditionCount);
+                for (int i = 0; i < conditionCount; i++)
+                {
+                    rawString = reader.ReadLine();
+                    var words = rawString.Split(' ');   // TODO: Use separator.
+                    int reference = int.Parse(words[0]);
+                    double value = double.Parse(words[3]);
+                    // TODO: Parse function instead of constant.
+
+                    conditions.Add(reference, v => value);
+                }
+            }
+            return conditions;
+        }
+
+        private static void WriteSolutionToFile(string path, IMesh mesh, Vector solution)
+        {
+            using (var solutionFile = new StreamWriter(path))
             {
                 solutionFile.WriteLine(
 $@"MeshVersionFormatted 1
@@ -83,6 +113,26 @@ End");
             }
         }
 
+        private static void OutputError(IMesh mesh, Vector solution)
+        {
+            double squareError = 0;
+            foreach (var finiteElement in mesh.FiniteElements)
+            {
+                Func<Vector2, double> error = v =>
+                {
+                    double u0 = U(v),
+                           uh0 = 0;
+
+                    foreach (var node in finiteElement.Nodes)
+                        uh0 += node.Phi(v) * solution[node.Vertex.Index];
+                    return (u0 - uh0) * (u0 - uh0);
+                };
+                squareError += Calculator.Integrate(error, finiteElement);
+            }
+
+            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
+        }
+
         private static void StartMeasuringTaskTime(string taskName)
         // TODO: Encapsulate into own timer class.
         {
@@ -103,8 +153,7 @@ End");
 
         private static void ShowMeshParameters(IMesh mesh)
         {
-            Console.WriteLine($"Number of interior vertices: {mesh.InteriorNodes.Count}");
-            Console.WriteLine($"Number of boundary vertices: {mesh.BoundaryNodes.Count}");
+            Console.WriteLine($"Number of vertices: {mesh.Nodes.Count}");
             Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count}");
         }
     }

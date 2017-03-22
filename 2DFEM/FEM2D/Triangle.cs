@@ -1,25 +1,34 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 
 namespace FEMSharp.FEM2D
 {
-    class Triangle
+    internal class Triangle
     {
-        private readonly Vertex[] nodes;
-
-        public Triangle(Vertex node1, Vertex node2, Vertex node3)
-        {
-            this.nodes = new Vertex[] { node1, node2, node3 };
-        }
+        private double? area;
+        public Vertex Vertex0 { get; }
+        public Vertex Vertex1 { get; }
+        public Vertex Vertex2 { get; }
 
         public double Area
         {
             get
             {
-                Vector2 u = nodes[1].Position - nodes[0].Position,
-                        v = nodes[2].Position - nodes[0].Position;
-
-                return Math.Abs(u.x * v.y - u.y * v.x) / 2;
+                if (!area.HasValue)
+                {
+                    Vector2 u = Vertex1.Position - Vertex0.Position,
+                            v = Vertex2.Position - Vertex0.Position;
+                    area = Math.Abs(u.x * v.y - u.y * v.x) / 2;
+                }
+                return area.Value;
             }
+        }
+
+        public Triangle(Vertex vertex0, Vertex vertex1, Vertex vertex2)
+        {
+            Vertex0 = vertex0;
+            Vertex1 = vertex1;
+            Vertex2 = vertex2;
         }
     }
 }

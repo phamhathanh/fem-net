@@ -128,18 +128,18 @@ namespace FEMSharp.FEM2D
             return node;
         }
 
-        public sealed class P2Element : FiniteElement
+        public sealed class P2Element : IFiniteElement
         {
-            public override ReadOnlyCollection<INode> Nodes { get; }
+            public ReadOnlyCollection<INode> Nodes { get; }
 
-            public class FENode : INode
+            public class Node : INode
             {
                 public Vertex Vertex { get; set; }
 
                 public Func<Vector2, double> Phi { get; set; }
                 public Func<Vector2, Vector2> GradPhi { get; set; }
 
-                public FENode(Vertex node)
+                public Node(Vertex node)
                 {
                     Vertex = node;
                 }
@@ -158,39 +158,44 @@ namespace FEMSharp.FEM2D
                                         lambda1 = temp1.Phi,
                                         lambda2 = temp2.Phi;
 
-                var feNode0 = new FENode(node0)
+                var feNode0 = new Node(node0)
                 {
                     Phi = v => lambda0(v) * (2 * lambda0(v) - 1),
                     GradPhi = v => (4 * lambda0(v) - 1) * gradLambda0(v)
                 };
-                var feNode1 = new FENode(node1)
+                var feNode1 = new Node(node1)
                 {
                     Phi = v => lambda1(v) * (2 * lambda1(v) - 1),
                     GradPhi = v => (4 * lambda1(v) - 1) * gradLambda1(v)
                 };
-                var feNode2 = new FENode(node2)
+                var feNode2 = new Node(node2)
                 {
                     Phi = v => lambda2(v) * (2 * lambda2(v) - 1),
                     GradPhi = v => (4 * lambda2(v) - 1) * gradLambda2(v)
                 };
 
-                var feNode01 = new FENode(node01)
+                var feNode01 = new Node(node01)
                 {
                     Phi = v => 4 * lambda0(v) * lambda1(v),
                     GradPhi = v => 4 * (lambda0(v) * gradLambda1(v) + lambda1(v) * gradLambda0(v))
                 };
-                var feNode12 = new FENode(node12)
+                var feNode12 = new Node(node12)
                 {
                     Phi = v => 4 * lambda1(v) * lambda2(v),
                     GradPhi = v => 4 * (lambda1(v) * gradLambda2(v) + lambda2(v) * gradLambda1(v))
                 };
-                var feNode20 = new FENode(node20)
+                var feNode20 = new Node(node20)
                 {
                     Phi = v => 4 * lambda2(v) * lambda0(v),
                     GradPhi = v => 4 * (lambda2(v) * gradLambda0(v) + lambda0(v) * gradLambda2(v))
                 };
 
                 Nodes = new ReadOnlyCollection<INode>(new[] { feNode0, feNode1, feNode2, feNode01, feNode12, feNode20 });
+            }
+
+            public bool Contains(Vector2 point)
+            {
+                throw new NotImplementedException();
             }
         }
     }

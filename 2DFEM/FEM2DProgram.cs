@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using static System.Math;
 
 namespace FEMSharp
 {
@@ -17,7 +18,7 @@ namespace FEMSharp
             double x = v.x,
                    y = v.y;
 
-            return -4 / ((x + y + 1) * (x + y + 1) * (x + y + 1)) + 2 * Math.PI * Math.PI * Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + a0 * U(v);
+            return -4 / ((x + y + 1) * (x + y + 1) * (x + y + 1)) + 2 * PI * PI * Sin(PI * x) * Sin(PI * y) + a0 * U(v);
         }
 
         private static double U(Vector2 v)
@@ -25,7 +26,7 @@ namespace FEMSharp
             double x = v.x,
                    y = v.y;
 
-            return 1 / (x + y + 1) + Math.Sin(Math.PI * x) * Math.Sin(Math.PI * y) + 99;
+            return 1 / (x + y + 1) + Sin(PI * x) * Sin(PI * y) + 99;
         }
 
         public static void Run()
@@ -33,84 +34,25 @@ namespace FEMSharp
             Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
             StartMeasuringTaskTime("Total");
 
+            var problemName = "heat2_cs";
+
             StartMeasuringTaskTime("Read mesh");
-            var mesh = new P1MeshFromFile("heat2_cs.mesh");
+            var mesh = InOut.LoadMeshFromFile($"{problemName}.mesh", new P1Element.Factory());
             ShowMeshParameters(mesh);
             StopAndShowTaskTime("Read mesh");
 
-            var boundaryConditions = ReadBoundaryConditions("DEFAULT.stokes");
+            var boundaryConditions = InOut.ReadBoundaryConditions("DEFAULT.stokes");
 
             StartMeasuringTaskTime("Calculation");
             var laplaceEquation = new LaplaceEquation(mesh, a0, F, boundaryConditions);
             var solution = laplaceEquation.Solve();
             StopAndShowTaskTime("Calculation");
 
-            WriteSolutionToFile("heat2_cs.sol", mesh, solution);
+            InOut.WriteSolutionToFile($"{problemName}.sol", mesh, solution);
             //OutputError(mesh, solution);
 
             StopAndShowTaskTime("Total");
             Console.ReadLine();
-        }
-
-        private static Dictionary<int, Func<Vector2, double>> ReadBoundaryConditions(string path)
-        {
-            Dictionary<int, Func<Vector2, double>> conditions;
-            using (var reader = new StreamReader(path))
-            {
-                string rawString;
-                do
-                    rawString = reader.ReadLine();
-                while (rawString != "dirichlet");
-
-                if (reader.EndOfStream)
-                    throw new NotImplementedException();
-                // TODO: other types of condition.
-
-                rawString = reader.ReadLine();
-                int conditionCount = int.Parse(rawString);
-                conditions = new Dictionary<int, Func<Vector2, double>>(conditionCount);
-                for (int i = 0; i < conditionCount; i++)
-                {
-                    rawString = reader.ReadLine();
-                    var words = rawString.Split(' ');   // TODO: Use separator.
-                    int reference = int.Parse(words[0]);
-                    double value = double.Parse(words[3]);
-                    // TODO: Parse function instead of constant.
-
-                    conditions.Add(reference, v => value);
-                }
-            }
-            return conditions;
-        }
-
-        private static void WriteSolutionToFile(string path, IMesh mesh, Vector solution)
-        {
-            using (var solutionFile = new StreamWriter(path))
-            {
-                solutionFile.WriteLine(
-$@"MeshVersionFormatted 1
-
-Dimension 2
-
-SolAtVertices
-{mesh.Vertices.Count}
-2 2 1
-");
-                int i = 0;
-                foreach (var vertex in mesh.Vertices)
-                {
-                    solutionFile.WriteLine($"{solution[i]} {vertex.Position.x} {vertex.Position.y}");
-                    i++;
-                }
-
-                solutionFile.WriteLine(
-$@"
-SolAtTriangles
-0
-1 2
-
-End");
-            }
         }
 
         private static void OutputError(IMesh mesh, Vector solution)
@@ -130,7 +72,7 @@ End");
                 squareError += Calculator.Integrate(error, finiteElement);
             }
 
-            Console.WriteLine($"L2 error in domain: {Math.Sqrt(squareError)}");
+            Console.WriteLine($"L2 error in domain: {Sqrt(squareError)}");
         }
 
         private static void StartMeasuringTaskTime(string taskName)

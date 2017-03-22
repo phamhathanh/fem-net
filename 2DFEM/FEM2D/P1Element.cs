@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace FEMSharp.FEM2D
 {
-    internal sealed class P1Element : FiniteElement
+    internal sealed class P1Element : IFiniteElement
     {
         public class Node : INode
         {
@@ -30,7 +31,7 @@ namespace FEMSharp.FEM2D
             }
         }
 
-        public override ReadOnlyCollection<INode> Nodes { get; }
+        public ReadOnlyCollection<INode> Nodes { get; }
 
         public P1Element(Vertex vertex0, Vertex vertex1, Vertex vertex2)
         {
@@ -38,6 +39,15 @@ namespace FEMSharp.FEM2D
             var node1 = new Node(vertex1, vertex2, vertex0);
             var node2 = new Node(vertex2, vertex0, vertex1);
             Nodes = new ReadOnlyCollection<INode>(new[] { node0, node1, node2 });
+        }
+
+        public bool Contains(Vector2 point)
+            => Nodes.All(node => node.Phi(point) >= 0);
+
+        public class Factory : IFiniteElementFactory
+        {
+            public IFiniteElement Create(Triangle triangle)
+                => new P1Element(triangle.Vertex0, triangle.Vertex1, triangle.Vertex2);
         }
     }
 }

@@ -9,7 +9,6 @@ namespace FEMSharp.FEM2D
     internal class P1BubbleMeshFromFile : IMesh
     {
         private List<Vertex> nodes;
-        private int interiorIndex = 0;
         public IReadOnlyCollection<Vertex> Vertices => nodes.AsReadOnly();
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
@@ -27,24 +26,11 @@ namespace FEMSharp.FEM2D
 
                 reader.ReadLine();
                 var nodes = new Vertex[nodeCount];
-                interiorIndex = 0;
-                int boundaryIndex = 0;
                 for (int i = 0; i < nodeCount; i++)
                 {
                     rawString = reader.ReadLine();
                     var position = ReadPosition(rawString);
                     var isInside = !IsOnBoundary(position);
-                    int index;
-                    if (isInside)
-                    {
-                        index = interiorIndex;
-                        interiorIndex++;
-                    }
-                    else
-                    {
-                        index = boundaryIndex;
-                        boundaryIndex++;
-                    }
                     nodes[i] = new Vertex(position, 0);//isInside);
                     throw new NotImplementedException();
                 }
@@ -89,16 +75,15 @@ namespace FEMSharp.FEM2D
 
             var centerNode = new Vertex((nodes[i].Position + nodes[j].Position + nodes[k].Position) / 3, 0);//true);
             throw new NotImplementedException();
-            interiorIndex++;
             nodes.Add(centerNode);
             return new P1bElement(nodes[i], nodes[j], nodes[k], centerNode);
         }
 
-        public sealed class P1bElement : FiniteElement
+        public sealed class P1bElement : IFiniteElement
         {
-            public override ReadOnlyCollection<INode> Nodes { get; }
+            public ReadOnlyCollection<INode> Nodes { get; }
 
-            public class FENode : INode
+            public class Node : INode
             {
                 public Vertex Vertex { get; set; }
 
@@ -112,7 +97,7 @@ namespace FEMSharp.FEM2D
                 var node1 = new P1Element.Node(vertex1, vertex2, vertex0);
                 var node2 = new P1Element.Node(vertex2, vertex0, vertex1);
                 throw new NotImplementedException();
-                var feCenter = new FENode()
+                var feCenter = new Node()
                 {
                     Vertex = center,
                     Phi = v => 27 * node0.Phi(v) * node1.Phi(v) * node2.Phi(v),
@@ -129,6 +114,11 @@ namespace FEMSharp.FEM2D
                     }
                 };
                 Nodes = new ReadOnlyCollection<INode>(new[] { node0, node1, node2 });
+            }
+
+            public bool Contains(Vector2 point)
+            {
+                throw new NotImplementedException();
             }
         }
     }

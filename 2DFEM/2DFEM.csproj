@@ -7,7 +7,7 @@
     <ProjectGuid>{A2EEC66A-A3A3-4C3A-8C56-65382C6A7EE1}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>_2DFEM</RootNamespace>
+    <RootNamespace>FEMSharp</RootNamespace>
     <AssemblyName>2DFEM</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -41,12 +41,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FEM2D\FiniteElementFunction.cs" />
-    <Compile Include="FEM2D\FiniteElement.cs" />
+    <Compile Include="FEM2D\IFiniteElementFactory.cs" />
+    <Compile Include="FEM2D\InOut.cs" />
+    <Compile Include="FEM2D\Mesh.cs" />
     <Compile Include="FEM2D\P2MeshFromFile.cs" />
     <Compile Include="FEM2D\P1BubbleMeshFromFile.cs" />
     <Compile Include="FEM2D\IFiniteElement.cs" />
-    <Compile Include="FEM2D\P1MeshFromFile.cs" />
+    <Compile Include="FEM2D\Triangle.cs" />
     <Compile Include="FEM3DProgram.cs" />
     <Compile Include="FEM3D\FiniteElementFunction.cs" />
     <Compile Include="FEM3D\FiniteElement.cs" />
@@ -65,8 +66,6 @@
     <Compile Include="FEM3D\Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Matrix.cs" />
-    <Compile Include="FEM2D\Rectangle.cs" />
-    <Compile Include="FEM2D\Triangle.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="FEM3D\Vector3.cs" />
     <Compile Include="FEM2D\Vector2.cs" />

@@ -1,4 +1,4 @@
-﻿namespace FEMSharp.FEM2D
+﻿namespace FEM_NET.FEM2D
 {
     interface IFunction<in T, out TResult>
     {

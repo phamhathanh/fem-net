@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     internal class P1BubbleMeshFromFile : IMesh
     {

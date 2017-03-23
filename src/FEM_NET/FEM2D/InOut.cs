@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     internal static class InOut
     {
-        public static IMesh LoadMeshFromFile(string path, IFiniteElementFactory factory)
+        public static IMesh ReadMesh(string path, IFiniteElementFactory factory)
         {
             using (var reader = File.OpenText(path))
             {

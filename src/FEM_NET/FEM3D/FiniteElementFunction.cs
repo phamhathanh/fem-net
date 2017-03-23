@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace FEMSharp.FEM3D
+namespace FEM_NET.FEM3D
 {
     internal class FiniteElementFunction
     {

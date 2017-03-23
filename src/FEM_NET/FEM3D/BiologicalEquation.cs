@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace FEMSharp.FEM3D
+namespace FEM_NET.FEM3D
 {
     class BiologicalEquation
     {

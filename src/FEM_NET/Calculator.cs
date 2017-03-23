@@ -1,8 +1,8 @@
-﻿using FEMSharp.FEM2D;
-using FEMSharp.FEM3D;
+﻿using FEM_NET.FEM2D;
+using FEM_NET.FEM3D;
 using System;
 
-namespace FEMSharp
+namespace FEM_NET
 {
     static class Calculator
     {

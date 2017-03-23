@@ -1,0 +1,8 @@
+dirichlet
+2
+1 vertex v 20.
+2 vertex v 60.
+
+domain
+1
+0 5.e-4 1.0

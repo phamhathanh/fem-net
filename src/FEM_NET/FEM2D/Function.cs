@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     class Function : IFunction<Vector2, double>
     {

@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     internal sealed class P1Element : IFiniteElement
     {

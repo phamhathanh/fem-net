@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     internal class Triangle
     {

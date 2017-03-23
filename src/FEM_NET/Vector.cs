@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FEMSharp
+namespace FEM_NET
 {
     internal sealed class Vector
     {

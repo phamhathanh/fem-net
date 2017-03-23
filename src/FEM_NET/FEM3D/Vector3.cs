@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FEMSharp.FEM3D
+namespace FEM_NET.FEM3D
 {
     public struct Vector3
     {

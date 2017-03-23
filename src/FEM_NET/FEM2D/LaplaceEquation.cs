@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace FEMSharp.FEM2D
+namespace FEM_NET.FEM2D
 {
     class LaplaceEquation
     {

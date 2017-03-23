@@ -65,12 +65,12 @@ namespace FEMSharp.FEM3D
 
             Console.WriteLine("Solving... ");
 
-            using (var mbFile = new StreamWriter($"MB_{name}.dat"))
-            using (var domFile = new StreamWriter($"DOM_{name}.dat"))
-            using (var somFile = new StreamWriter($"SOM_{name}.dat"))
-            using (var fomFile = new StreamWriter($"FOM_{name}.dat"))
-            using (var enzFile = new StreamWriter($"ENZ_{name}.dat"))
-            using (var co2File = new StreamWriter($"CO2_{name}.dat"))
+            using (var mbFile = File.CreateText($"MB_{name}.dat"))
+            using (var domFile = File.CreateText($"DOM_{name}.dat"))
+            using (var somFile = File.CreateText($"SOM_{name}.dat"))
+            using (var fomFile = File.CreateText($"FOM_{name}.dat"))
+            using (var enzFile = File.CreateText($"ENZ_{name}.dat"))
+            using (var co2File = File.CreateText($"CO2_{name}.dat"))
             {
                 for (int i = 0; i < 168; i++)
                 {

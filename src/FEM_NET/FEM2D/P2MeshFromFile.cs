@@ -17,7 +17,7 @@ namespace FEMSharp.FEM2D
         public P2MeshFromFile(string path)
         // TODO: Remove FromFile duplication.
         {
-            using (var reader = new StreamReader(path))
+            using (var reader = File.OpenText(path))
             {
                 string rawString;
                 do

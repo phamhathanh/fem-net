@@ -12,7 +12,7 @@ namespace FEMSharp.FEM3D
 
         public MeshFromFile(string path)
         {
-            using (var reader = new StreamReader(path))
+            using (var reader = File.OpenText(path))
             {
                 string rawString;
                 do

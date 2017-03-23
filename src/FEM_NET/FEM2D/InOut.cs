@@ -8,7 +8,7 @@ namespace FEMSharp.FEM2D
     {
         public static IMesh LoadMeshFromFile(string path, IFiniteElementFactory factory)
         {
-            using (var reader = new StreamReader(path))
+            using (var reader = File.OpenText(path))
             {
                 string rawString;
                 do
@@ -70,7 +70,7 @@ namespace FEMSharp.FEM2D
         public static Dictionary<int, Func<Vector2, double>> ReadBoundaryConditions(string path)
         {
             Dictionary<int, Func<Vector2, double>> conditions;
-            using (var reader = new StreamReader(path))
+            using (var reader = File.OpenText(path))
             {
                 string rawString;
                 do
@@ -100,9 +100,9 @@ namespace FEMSharp.FEM2D
 
         public static void WriteSolutionToFile(string path, IMesh mesh, Vector solution)
         {
-            using (var solutionFile = new StreamWriter(path))
+            using (var writer = File.CreateText(path))
             {
-                solutionFile.WriteLine(
+                writer.WriteLine(
 $@"MeshVersionFormatted 1
 
 Dimension 2
@@ -114,11 +114,11 @@ SolAtVertices
                 int i = 0;
                 foreach (var vertex in mesh.Vertices)
                 {
-                    solutionFile.WriteLine($"{solution[i]} {vertex.Position.x} {vertex.Position.y}");
+                    writer.WriteLine($"{solution[i]} {vertex.Position.x} {vertex.Position.y}");
                     i++;
                 }
 
-                solutionFile.WriteLine(
+                writer.WriteLine(
 $@"
 SolAtTriangles
 0

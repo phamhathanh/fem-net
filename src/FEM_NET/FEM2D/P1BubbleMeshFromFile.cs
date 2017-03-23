@@ -14,7 +14,7 @@ namespace FEMSharp.FEM2D
 
         public P1BubbleMeshFromFile(string path)
         {
-            using (var reader = new StreamReader(path))
+            using (StreamReader reader = File.OpenText(path))
             {
                 string rawString;
                 do

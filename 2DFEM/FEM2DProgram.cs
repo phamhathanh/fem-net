@@ -1,7 +1,5 @@
 ﻿using FEMSharp.FEM2D;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using static System.Math;
 
 namespace FEMSharp

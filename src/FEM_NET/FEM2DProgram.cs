@@ -12,7 +12,7 @@ namespace FEM_NET
 
         private static double F(Vector2 v)
         {
-            return 0;
+            //return 0;
             double x = v.x,
                    y = v.y;
 
@@ -60,7 +60,7 @@ namespace FEM_NET
             try
             {
                 mesh = InOut.ReadMesh($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.mesh", new P1Element.Factory());
-                boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.stokes");
+                boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.heat");
             }
             catch (FileNotFoundException exception)
             {

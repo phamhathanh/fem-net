@@ -1,8 +1,7 @@
-﻿using FEM_NET.FEM3D;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 
-namespace FEM_NET
+namespace FEM_NET.FEM3D
 {
     internal static class FEM3DProgram
     {

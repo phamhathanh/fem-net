@@ -6,7 +6,7 @@ namespace FEM_NET
     {
         private static void Main(string[] args)
         {
-            FEM2DProgram.Run();
+            FEM2D.FEM2DProgram.Run();
             Console.WriteLine("Press ENTER to exit...");
             Console.ReadLine();
         }

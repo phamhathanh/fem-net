@@ -1,11 +1,9 @@
-﻿using FEM_NET.FEM2D;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using static System.Math;
 
-namespace FEM_NET
+namespace FEM_NET.FEM2D
 {
     internal static class FEM2DProgram
     {
@@ -31,6 +29,7 @@ namespace FEM_NET
         private static IMesh mesh;
         private static Dictionary<int, Func<Vector2, double>> boundaryConditions;
         private const string PROBLEM_NAME = "heat1_128";
+
         public static void Run()
         {
             Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");

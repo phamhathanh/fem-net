@@ -32,9 +32,15 @@ namespace FEM_NET.FEM2D
         }
 
         public ReadOnlyCollection<INode> Nodes { get; }
+        public Triangle Triangle { get; }
 
-        public P1Element(Vertex vertex0, Vertex vertex1, Vertex vertex2)
+        public P1Element(Triangle triangle)
         {
+            Triangle = triangle;
+
+            var vertex0 = triangle.Vertex0;
+            var vertex1 = triangle.Vertex1;
+            var vertex2 = triangle.Vertex2;
             var node0 = new Node(vertex0, vertex1, vertex2);
             var node1 = new Node(vertex1, vertex2, vertex0);
             var node2 = new Node(vertex2, vertex0, vertex1);
@@ -47,7 +53,7 @@ namespace FEM_NET.FEM2D
         public class Factory : IFiniteElementFactory
         {
             public IFiniteElement Create(Triangle triangle)
-                => new P1Element(triangle.Vertex0, triangle.Vertex1, triangle.Vertex2);
+                => new P1Element(triangle);
         }
     }
 }

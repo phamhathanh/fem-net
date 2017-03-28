@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using static System.Math;
 
 namespace FEM_NET
 {
     internal static class FEM2DProgram
     {
-        private const double a0 = 0;
+        private const double a0 = 1;
 
         private static double F(Vector2 v)
         {
@@ -29,8 +30,7 @@ namespace FEM_NET
 
         private static IMesh mesh;
         private static Dictionary<int, Func<Vector2, double>> boundaryConditions;
-        private const string PROBLEM_NAME = "heat2_cs";
-
+        private const string PROBLEM_NAME = "heat1_128";
         public static void Run()
         {
             Console.WriteLine("FEM for solving equation: -Laplace(u) + a0 * u = F");
@@ -45,7 +45,7 @@ namespace FEM_NET
             StopAndShowTaskTime(readInputTimer);
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
-            var laplaceEquation = new LaplaceEquation(mesh, a0, F, boundaryConditions);
+            var laplaceEquation = new LaplaceEquation(mesh, boundaryConditions, a0, F);
             var solution = laplaceEquation.Solve();
             StopAndShowTaskTime(calculationTimer);
 
@@ -61,6 +61,7 @@ namespace FEM_NET
             {
                 mesh = InOut.ReadMesh($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.mesh", new P1Element.Factory());
                 boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.heat");
+                //boundaryConditions = new Dictionary<int, Func<Vector2, double>>() { [1] = U, [2] = U, [3] = U, [4] = U };
             }
             catch (FileNotFoundException exception)
             {
@@ -77,6 +78,14 @@ namespace FEM_NET
 
         private static void OutputError(IMesh mesh, Vector solution)
         {
+            var indexByVertex = new Dictionary<Vertex, int>(mesh.Vertices.Count);
+            int i = 0;
+            foreach (var vertex in mesh.Vertices)
+            {
+                indexByVertex.Add(vertex, i);
+                i++;
+            }
+
             double squareError = 0;
             foreach (var finiteElement in mesh.FiniteElements)
             {
@@ -84,12 +93,11 @@ namespace FEM_NET
                 {
                     double u0 = U(v),
                            uh0 = 0;
-
                     foreach (var node in finiteElement.Nodes)
-                        uh0 += node.Phi(v) * solution[node.Vertex.Index];
+                        uh0 += node.Phi(v) * solution[indexByVertex[node.Vertex]];
                     return (u0 - uh0) * (u0 - uh0);
                 };
-                squareError += Calculator.Integrate(error, finiteElement);
+                squareError += Calculator.Integrate(error, finiteElement.Triangle);
             }
 
             Console.WriteLine($"L2 error in domain: {Sqrt(squareError)}");

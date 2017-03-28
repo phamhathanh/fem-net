@@ -6,6 +6,7 @@ namespace FEM_NET.FEM2D
     internal interface IFiniteElement
     {
         ReadOnlyCollection<INode> Nodes { get; }
+        Triangle Triangle { get; }
 
         bool Contains(Vector2 point);
     }

@@ -132,6 +132,14 @@ namespace FEM_NET.FEM2D
         {
             public ReadOnlyCollection<INode> Nodes { get; }
 
+            public Triangle Triangle
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public class Node : INode
             {
                 public Vertex Vertex { get; set; }

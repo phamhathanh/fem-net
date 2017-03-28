@@ -19,12 +19,12 @@ namespace FEM_NET.FEM2D
 
         // -Laplace(u) + a0 * u = f
         // u = g on boundary
-        public LaplaceEquation(IMesh mesh, double a0, Func<Vector2, double> f, Dictionary<int, Func<Vector2, double>> boundaryConditions)
+        public LaplaceEquation(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, double a0, Func<Vector2, double> f)
         {
             this.mesh = mesh;
+            this.boundaryConditions = boundaryConditions;
             this.a0 = a0;
             this.f = f;
-            this.boundaryConditions = boundaryConditions;
         }
 
         public Vector Solve()
@@ -80,11 +80,11 @@ namespace FEM_NET.FEM2D
                             if (IsInside(otherNode))
                             {
                                 int J = otherNode.Vertex.Index;
-                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
+                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle)
+                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement.Triangle);
                             }
 
-                        rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement);
+                        rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement.Triangle);
                     }
                     else
                     {
@@ -93,8 +93,8 @@ namespace FEM_NET.FEM2D
                             if (IsInside(otherNode))
                             {
                                 int I = otherNode.Vertex.Index;
-                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement);
+                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle)
+                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement.Triangle);
                             }
                     }
             }
@@ -108,12 +108,12 @@ namespace FEM_NET.FEM2D
             var result = Calculator.Solve(A, rhs - Ag * boundary, epsilon).vector;
             var solution = new double[mesh.Vertices.Count];
             int i = 0;
-            foreach (var node in mesh.Vertices)
+            foreach (var vertex in mesh.Vertices)
             {
-                if (IsInside(node))
-                    solution[i] = result[node.Index];
+                if (IsInside(vertex))
+                    solution[i] = result[vertex.Index];
                 else
-                    solution[i] = boundary[node.Index];
+                    solution[i] = boundary[vertex.Index];
                 i++;
             }
             return new Vector(solution);

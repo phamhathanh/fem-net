@@ -3,27 +3,23 @@ using System.Collections.Generic;
 
 namespace FEM_NET.FEM2D
 {
-    class LaplaceEquation
+    class Problem
     {
         private readonly IMesh mesh;
-        private readonly double a0;
         private readonly Func<Vector2, double> f;
         private readonly Dictionary<int, Func<Vector2, double>> boundaryConditions;
-        
+        private readonly BilinearForm bilinearForm;
+
         private int interiorVertexCount, boundaryVertexCount;
 
         private Matrix A, Ag;
         private Vector rhs;
 
-        // TODO: Change to FE function.
-
-        // -Laplace(u) + a0 * u = f
-        // u = g on boundary
-        public LaplaceEquation(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, double a0, Func<Vector2, double> f)
+        public Problem(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, BilinearForm bilinearForm, Func<Vector2, double> f)
         {
             this.mesh = mesh;
             this.boundaryConditions = boundaryConditions;
-            this.a0 = a0;
+            this.bilinearForm = bilinearForm;
             this.f = f;
         }
 
@@ -41,7 +37,6 @@ namespace FEM_NET.FEM2D
             interiorVertexCount = 0;
             boundaryVertexCount = 0;
             foreach (var vertex in mesh.Vertices)
-            {
                 if (IsInside(vertex))
                 {
                     vertex.Index = interiorVertexCount;
@@ -54,7 +49,7 @@ namespace FEM_NET.FEM2D
                     vertex.Index = boundaryVertexCount;
                     boundaryVertexCount++;
                 }
-            }
+
             return new Vector(boundary);
         }
 
@@ -71,33 +66,25 @@ namespace FEM_NET.FEM2D
             var rhs = new double[interiorVertexCount];
 
             foreach (var finiteElement in mesh.FiniteElements)
-            {
                 foreach (var node in finiteElement.Nodes)
+                {
+                    int I = node.Vertex.Index;
                     if (IsInside(node))
-                    {
-                        int I = node.Vertex.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (IsInside(otherNode))
-                            {
-                                int J = otherNode.Vertex.Index;
-                                A[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement.Triangle);
-                            }
-
                         rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement.Triangle);
-                    }
-                    else
+                    foreach (var otherNode in finiteElement.Nodes)
                     {
-                        int J = node.Vertex.Index;
-                        foreach (var otherNode in finiteElement.Nodes)
-                            if (IsInside(otherNode))
-                            {
-                                int I = otherNode.Vertex.Index;
-                                Ag[I, J] += Calculator.Integrate(v => Vector2.Dot(node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle)
-                                    + Calculator.Integrate(v => a0 * node.Phi(v) * otherNode.Phi(v), finiteElement.Triangle);
-                            }
+                        int J = otherNode.Vertex.Index;
+                        Func<Vector2, double> localBilinearForm = v => bilinearForm(node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v));
+                        var integral = Calculator.Integrate(v => bilinearForm(node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle);
+                        if (!IsInside(otherNode))
+                            continue;
+
+                        if (IsInside(node))
+                            A[I, J] += integral;
+                        else
+                            Ag[J, I] += integral;
                     }
-            }
+                }
 
             this.rhs = new Vector(rhs);
         }

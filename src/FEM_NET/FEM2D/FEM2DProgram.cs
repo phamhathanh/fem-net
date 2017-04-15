@@ -28,7 +28,7 @@ namespace FEM_NET.FEM2D
 
         private static IMesh mesh;
         private static Dictionary<int, Func<Vector2, double>> boundaryConditions;
-        private const string PROBLEM_NAME = "heat1_128";
+        private const string PROBLEM_NAME = "heat2_cs";
 
 
         public static void Run()
@@ -46,21 +46,13 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            // Hard-code
-            /*
-            double dt = 0.1;
-            for (int i = 0; i < 30; i++)
-            {*/
-
             BilinearForm bilinearForm = (u, v, du, dv) => Vector2.Dot(du, dv) + a0 * u * v;
                 var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, F);
                 var solution = laplaceEquation.Solve();
-            //    InOut.WriteSolutionToFile($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.{i}.sol", mesh, solution);
                 InOut.WriteSolutionToFile($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.sol", mesh, solution);
-            //}
             StopAndShowTaskTime(calculationTimer);
 
-            OutputError(mesh, solution);
+            //OutputError(mesh, solution);
 
             StopAndShowTaskTime(totalTimer);
         }
@@ -70,8 +62,8 @@ namespace FEM_NET.FEM2D
             try
             {
                 mesh = InOut.ReadMesh($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.mesh", new P1Element.Factory());
-                //boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.heat");
-                boundaryConditions = new Dictionary<int, Func<Vector2, double>>() { [1] = U, [2] = U, [3] = U, [4] = U };
+                boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.heat");
+                //boundaryConditions = new Dictionary<int, Func<Vector2, double>>() { [1] = U, [2] = U, [3] = U, [4] = U };
             }
             catch (FileNotFoundException exception)
             {

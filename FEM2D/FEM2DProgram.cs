@@ -47,9 +47,9 @@ namespace FEM_NET.FEM2D
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
             BilinearForm bilinearForm = (u, v, du, dv) => Vector2.Dot(du, dv) + a0 * u * v;
-                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, F);
-                var solution = laplaceEquation.Solve();
-                InOut.WriteSolutionToFile($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.sol", mesh, solution);
+            var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, F);
+            var solution = laplaceEquation.Solve();
+            InOut.WriteSolutionToFile($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.sol", mesh, solution);
             StopAndShowTaskTime(calculationTimer);
 
             //OutputError(mesh, solution);

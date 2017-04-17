@@ -78,16 +78,8 @@ namespace FEM_NET.FEM2D
             return true;
         }
 
-        private static void OutputError(IMesh mesh, Vector solution)
+        private static void OutputError(IMesh mesh, FiniteElementFunction solution)
         {
-            var indexByVertex = new Dictionary<Vertex, int>(mesh.Vertices.Count);
-            int i = 0;
-            foreach (var vertex in mesh.Vertices)
-            {
-                indexByVertex.Add(vertex, i);
-                i++;
-            }
-
             double squareError = 0;
             foreach (var finiteElement in mesh.FiniteElements)
             {
@@ -96,7 +88,7 @@ namespace FEM_NET.FEM2D
                     double u0 = U(v),
                            uh0 = 0;
                     foreach (var node in finiteElement.Nodes)
-                        uh0 += node.Phi(v) * solution[indexByVertex[node.Vertex]];
+                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex);
                     return (u0 - uh0) * (u0 - uh0);
                 };
                 squareError += Calculator.Integrate(error, finiteElement.Triangle);

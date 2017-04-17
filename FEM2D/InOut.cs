@@ -98,7 +98,7 @@ namespace FEM_NET.FEM2D
             return conditions;
         }
 
-        public static void WriteSolutionToFile(string path, IMesh mesh, Vector solution)
+        public static void WriteSolutionToFile(string path, IMesh mesh, FiniteElementFunction solution)
         {
             using (var writer = File.CreateText(path))
             {
@@ -111,12 +111,8 @@ SolAtVertices
 {mesh.Vertices.Count}
 2 2 1
 ");
-                int i = 0;
                 foreach (var vertex in mesh.Vertices)
-                {
-                    writer.WriteLine($"{solution[i]} {vertex.Position.x} {vertex.Position.y}");
-                    i++;
-                }
+                    writer.WriteLine($"{solution.GetValueAt(vertex)} {vertex.Position.x} {vertex.Position.y}");
 
                 writer.WriteLine(
 $@"

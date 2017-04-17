@@ -23,11 +23,12 @@ namespace FEM_NET.FEM2D
             this.f = f;
         }
 
-        public Vector Solve()
+        public FiniteElementFunction Solve()
         {
             var boundary = CalculateBoundaryCondition();
             CalculateMatrixAndRHS();
-            return SolveEquation(boundary);
+            var values = SolveEquation(boundary);
+            return new FiniteElementFunction(mesh, values);
         }
 
         private Vector CalculateBoundaryCondition()

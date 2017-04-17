@@ -11,6 +11,7 @@ namespace FEM_NET.FEM2D
         private readonly BilinearForm bilinearForm;
 
         private int interiorVertexCount, boundaryVertexCount;
+        private Dictionary<Vertex, int> indexByVertex = new Dictionary<Vertex, int>();
 
         private Matrix A, Ag;
         private Vector rhs;
@@ -40,15 +41,15 @@ namespace FEM_NET.FEM2D
             foreach (var vertex in mesh.Vertices)
                 if (IsInside(vertex))
                 {
-                    vertex.Index = interiorVertexCount;
+                    indexByVertex.Add(vertex, interiorVertexCount);
                     interiorVertexCount++;
                 }
                 else
                 {
+                    indexByVertex.Add(vertex, boundaryVertexCount);
+                    boundaryVertexCount++;
                     var value = boundaryConditions[vertex.Reference](vertex.Position);
                     boundary.Add(value);
-                    vertex.Index = boundaryVertexCount;
-                    boundaryVertexCount++;
                 }
 
             return new Vector(boundary);
@@ -69,12 +70,12 @@ namespace FEM_NET.FEM2D
             foreach (var finiteElement in mesh.FiniteElements)
                 foreach (var node in finiteElement.Nodes)
                 {
-                    int I = node.Vertex.Index;
+                    int I = indexByVertex[node.Vertex];
                     if (IsInside(node))
                         rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement.Triangle);
                     foreach (var otherNode in finiteElement.Nodes)
                     {
-                        int J = otherNode.Vertex.Index;
+                        int J = indexByVertex[otherNode.Vertex];
                         Func<Vector2, double> localBilinearForm = v => bilinearForm(node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v));
                         var integral = Calculator.Integrate(v => bilinearForm(node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v)), finiteElement.Triangle);
                         if (!IsInside(otherNode))
@@ -99,9 +100,9 @@ namespace FEM_NET.FEM2D
             foreach (var vertex in mesh.Vertices)
             {
                 if (IsInside(vertex))
-                    solution[i] = result[vertex.Index];
+                    solution[i] = result[indexByVertex[vertex]];
                 else
-                    solution[i] = boundary[vertex.Index];
+                    solution[i] = boundary[indexByVertex[vertex]];
                 i++;
             }
             return new Vector(solution);

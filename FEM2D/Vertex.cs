@@ -5,9 +5,6 @@ namespace FEM_NET.FEM2D
     internal class Vertex
     {
         public Vector2 Position { get; }
-        public int Index { get; set; }
-        // TODO: Provide encapsulation.
-
         public int Reference { get; }
 
         public Vertex(Vector2 position, int reference)

@@ -7,11 +7,11 @@ namespace FEM_NET.FEM2D
 {
     internal static class FEM2DProgram
     {
-        private const double a0 = 1;
+        private const double a0 = 0;
 
         private static double F(Vector2 v)
         {
-            //return 0;
+            return 0;
             double x = v.x,
                    y = v.y;
 

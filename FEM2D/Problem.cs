@@ -6,7 +6,7 @@ namespace FEM_NET.FEM2D
     class Problem
     {
         private readonly IMesh mesh;
-        private readonly Func<Vector2, double> f;
+        private readonly Func<Vector2, double> rightHandSide;
         private readonly Dictionary<int, Func<Vector2, double>> boundaryConditions;
         private readonly BilinearForm bilinearForm;
 
@@ -16,15 +16,15 @@ namespace FEM_NET.FEM2D
         private Matrix A, Ag;
         private Vector rhs;
 
-        public Problem(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, BilinearForm bilinearForm, Func<Vector2, double> f)
+        public Problem(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, BilinearForm bilinearForm, Func<Vector2, double> rightHandSide)
         {
             this.mesh = mesh;
             this.boundaryConditions = boundaryConditions;
             this.bilinearForm = bilinearForm;
-            this.f = f;
+            this.rightHandSide = rightHandSide;
         }
 
-        public FiniteElementFunction Solve()
+        public IFiniteElementFunction Solve()
         {
             var boundary = CalculateBoundaryCondition();
             CalculateMatrixAndRHS();
@@ -72,7 +72,7 @@ namespace FEM_NET.FEM2D
                 {
                     int I = indexByVertex[node.Vertex];
                     if (IsInside(node))
-                        rhs[I] += Calculator.Integrate(v => f(v) * node.Phi(v), finiteElement.Triangle);
+                        rhs[I] += Calculator.Integrate(v => rightHandSide(v) * node.Phi(v), finiteElement.Triangle);
                     foreach (var otherNode in finiteElement.Nodes)
                     {
                         int J = indexByVertex[otherNode.Vertex];

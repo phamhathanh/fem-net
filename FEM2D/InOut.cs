@@ -98,7 +98,7 @@ namespace FEM_NET.FEM2D
             return conditions;
         }
 
-        public static void WriteSolutionToFile(string path, IMesh mesh, FiniteElementFunction solution)
+        public static void WriteSolutionToFile(string path, IMesh mesh, IFiniteElementFunction solution)
         {
             using (var writer = File.CreateText(path))
             {

@@ -7,28 +7,9 @@ namespace FEM_NET.FEM2D
 {
     internal static class FEM2DProgram
     {
-        private const double a0 = 0;
-
-        private static double F(Vector2 v)
-        {
-            return 0;
-            double x = v.x,
-                   y = v.y;
-
-            return -4 / ((x + y + 1) * (x + y + 1) * (x + y + 1)) + 2 * PI * PI * Sin(PI * x) * Sin(PI * y) + a0 * U(v);
-        }
-
-        private static double U(Vector2 v)
-        {
-            double x = v.x,
-                   y = v.y;
-
-            return 1 / (x + y + 1) + Sin(PI * x) * Sin(PI * y) + 99;
-        }
-
         private static IMesh mesh;
         private static Dictionary<int, Func<Vector2, double>> boundaryConditions;
-        private const string PROBLEM_NAME = "heat3_cs";
+        private const string PROBLEM_NAME = "heat2_cs";
 
         public static void Run()
         {
@@ -46,21 +27,23 @@ namespace FEM_NET.FEM2D
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
             // TODO: Time step from file / command.
-            double dt = 0.1;
+            double a0 = 0,
+                dt = 0.1;
             BilinearForm bilinearForm = (u, v, du, dv) => dt * Vector2.Dot(du, dv) + (1 + dt * a0) * u * v;
+            Func<Vector2, double> f = v => 0,
+                u0 = v => 10 + 15*v.x;
 
-            IFiniteElementFunction previous = new LambdaFunction(v => 10 + 15*v.x);
+            IFiniteElementFunction previous = new LambdaFunction(u0);
             // TODO: Initial step from file
             for (int i = 0; i < 30; i++)
             {
-                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, v => previous.GetValueAt(v) + dt*F(v));
+                Func<Vector2, double> rhs = v => previous.GetValueAt(v) + dt*f(v);
+                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, rhs);
                 previous = laplaceEquation.Solve();
             }
             InOut.WriteSolutionToFile($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.sol", mesh, previous);
+
             StopAndShowTaskTime(calculationTimer);
-
-            //OutputError(mesh, solution);
-
             StopAndShowTaskTime(totalTimer);
         }
 
@@ -70,7 +53,6 @@ namespace FEM_NET.FEM2D
             {
                 mesh = InOut.ReadMesh($"example{Path.DirectorySeparatorChar}{PROBLEM_NAME}.mesh", new P1Element.Factory());
                 boundaryConditions = InOut.ReadBoundaryConditions($"example{Path.DirectorySeparatorChar}DEFAULT.heat");
-                //boundaryConditions = new Dictionary<int, Func<Vector2, double>>() { [1] = U, [2] = U, [3] = U, [4] = U };
             }
             catch (FileNotFoundException exception)
             {
@@ -83,25 +65,6 @@ namespace FEM_NET.FEM2D
                 return false;
             }
             return true;
-        }
-
-        private static void OutputError(IMesh mesh, IFiniteElementFunction solution)
-        {
-            double squareError = 0;
-            foreach (var finiteElement in mesh.FiniteElements)
-            {
-                Func<Vector2, double> error = v =>
-                {
-                    double u0 = U(v),
-                           uh0 = 0;
-                    foreach (var node in finiteElement.Nodes)
-                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex);
-                    return (u0 - uh0) * (u0 - uh0);
-                };
-                squareError += Calculator.Integrate(error, finiteElement.Triangle);
-            }
-
-            Console.WriteLine($"L2 error in domain: {Sqrt(squareError)}");
         }
 
         private static Timer StartMeasuringTaskTime(string taskName)

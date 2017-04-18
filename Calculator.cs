@@ -1,5 +1,4 @@
 ﻿using FEM_NET.FEM2D;
-using FEM_NET.FEM3D;
 using System;
 
 namespace FEM_NET
@@ -95,47 +94,6 @@ namespace FEM_NET
 
             var area = Math.Abs(u.x*v.y - u.y*v.x) / 2;
             return sum * area;
-        }
-
-        public static double Integrate(Func<Vector3, double> function, FEM3D.FiniteElement finiteElement)
-        // TODO: Use finite element function.
-        // TODO: Abstraction.
-        {
-            double w0 = -74.0 / 5625,
-                    w1 = 343.0 / 45000,
-                    w2 = 56.0 / 2250;
-            var weights = new[] { w0, w1, w1, w1, w1, w2, w2, w2, w2, w2, w2 };
-
-            double c = 11.0 / 14,
-                d = 1.0 / 14,
-                a = 0.3994035761667992,
-                b = 0.1005964238332008;
-            var points = new[] { new Vector3(0.25, 0.25, 0.25),
-                                new Vector3(c, d, d),
-                                new Vector3(d, c, d),
-                                new Vector3(d, d, c),
-                                new Vector3(d, d, d),
-                                new Vector3(a, a, b),
-                                new Vector3(a, b, a),
-                                new Vector3(a, b, b),
-                                new Vector3(b, a, a),
-                                new Vector3(b, a, b),
-                                new Vector3(b, b, a) };
-
-            double sum = 0;
-            Vector3 x0 = finiteElement.Nodes[0].Position,
-                    u = finiteElement.Nodes[1].Position - x0,
-                    v = finiteElement.Nodes[2].Position - x0,
-                    w = finiteElement.Nodes[3].Position - x0;
-
-            for (int i = 0; i < 11; i++)
-            {
-                var baricentricPoint = x0 + points[i].x*u + points[i].y*v + points[i].z*w;
-                sum += weights[i] * function(baricentricPoint);
-            }
-
-            var volumn = Math.Abs(u.x*v.y*w.z + u.y*v.z*w.z + u.z*v.x*w.y - u.z*v.y*w.x - u.y*v.x*w.z - u.x*v.z*w.y) / 6;
-            return sum * volumn * 6;
         }
     }
 }

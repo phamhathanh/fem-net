@@ -16,7 +16,8 @@ namespace FEM_NET.FEM2D
         private Matrix A, Ag;
         private Vector rhs;
 
-        public Problem(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions, BilinearForm bilinearForm, Func<Vector2, double> rightHandSide)
+        public Problem(IMesh mesh, Dictionary<int, Func<Vector2, double>> boundaryConditions,
+                        BilinearForm bilinearForm, Func<Vector2, double> rightHandSide)
         {
             this.mesh = mesh;
             this.boundaryConditions = boundaryConditions;

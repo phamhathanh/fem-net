@@ -14,26 +14,35 @@ namespace FEM_NET
             app.HelpOption("-?|-h|--help");
 
             var meshArg = app.Argument("mesh", "Path to the mesh.");
-            var timeStepOption = app.Option("-dt", "Time step.", CommandOptionType.SingleValue);
             var conditionFileOption = app.Option("-bc", "Path to the boundary condition file.", CommandOptionType.SingleValue);
+            var timeStepOption = app.Option("-dt", "Time step.", CommandOptionType.SingleValue);
+            var timeStepNumberOption = app.Option("-it", "Number of time steps.", CommandOptionType.SingleValue);
+            var accuracyOption = app.Option("-err", "Accuracy.", CommandOptionType.SingleValue);
+            
             app.OnExecute(() => {
                 if (meshArg.Value == null)
                 {
                     Console.WriteLine("ERROR: Missing mesh.");
                     return 1;
                 }
+                var meshPath = meshArg.Value;
+                if (meshPath.EndsWith(".mesh"))
+                    meshPath = meshPath.Substring(0, meshPath.Length - 5);
+
+                var conditionPath = conditionFileOption.HasValue() ? conditionFileOption.Value() : $"example{Path.DirectorySeparatorChar}DEFAULT.heat";
                 double dt = timeStepOption.HasValue() ? double.Parse(timeStepOption.Value()) : 0.1;
-                var conditionFileName = conditionFileOption.HasValue() ? conditionFileOption.Value() : $"example{Path.DirectorySeparatorChar}DEFAULT.heat";
-                FEM2D.FEM2DProgram.Run(meshArg.Value, conditionFileName, dt);
+                int it = timeStepNumberOption.HasValue() ? int.Parse(timeStepNumberOption.Value()) : 30;
+                double acc = accuracyOption.HasValue() ? double.Parse(accuracyOption.Value()) : 1e-6;
+                // TODO: Format error.
+                FEM2D.FEM2DProgram.Run(meshPath, conditionPath, dt, it, acc);
+                Console.WriteLine("Press ENTER to exit...");
+                Console.ReadLine();
                 return 0;
             });
 
             try
             {
-                Console.WriteLine();
                 app.Execute(args);
-                Console.WriteLine("Press ENTER to exit...");
-                Console.ReadLine();
             }
             catch (CommandParsingException exception)
             {
@@ -47,7 +56,6 @@ namespace FEM_NET
             {
                 Console.WriteLine($"DIRECTORY NOT FOUND: {exception.Message}");
             }
-            return;
         }
     }
 }

@@ -5,8 +5,9 @@ namespace FEM_NET.FEM2D
 {
     internal static class FEM2DProgram
     {
-        public static void Run(string meshName, string conditionFileName, double dt)
+        public static void Run(string meshName, string conditionFileName, double timeStep, int timeStepCount, double accuracy)
         {
+            Console.WriteLine();
             Console.WriteLine("Solving...");
             var totalTimer = StartMeasuringTaskTime("Total");
 
@@ -20,16 +21,16 @@ namespace FEM_NET.FEM2D
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
             double a0 = 0;
-            BilinearForm bilinearForm = (u, v, du, dv) => dt * Vector2.Dot(du, dv) + (1 + dt * a0) * u * v;
+            BilinearForm bilinearForm = (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + (1 + timeStep * a0) * u * v;
             Func<Vector2, double> f = v => 0,
                 u0 = v => 10 + 15*v.x;
 
             IFiniteElementFunction previous = new LambdaFunction(u0);
             // TODO: Initial step from file
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < timeStepCount; i++)
             {
-                Func<Vector2, double> rhs = v => previous.GetValueAt(v) + dt*f(v);
-                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, rhs);
+                Func<Vector2, double> rhs = v => previous.GetValueAt(v) + timeStep*f(v);
+                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, rhs, accuracy);
                 previous = laplaceEquation.Solve();
             }
             InOut.WriteSolutionToFile($"{meshName}.sol", mesh, previous);

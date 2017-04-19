@@ -23,7 +23,7 @@ namespace FEM_NET
                     return 1;
                 }
                 double dt = timeStepOption.HasValue() ? double.Parse(timeStepOption.Value()) : 0.1;
-                var conditionFileName = conditionFileOption.HasValue() ? conditionFileOption.Value() : "example\\DEFAULT.heat";
+                var conditionFileName = conditionFileOption.HasValue() ? conditionFileOption.Value() : $"example{Path.DirectorySeparatorChar}DEFAULT.heat";
                 FEM2D.FEM2DProgram.Run(meshArg.Value, conditionFileName, dt);
                 return 0;
             });

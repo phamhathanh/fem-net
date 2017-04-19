@@ -1,24 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace FEM_NET
 {
     internal static class Program
     {
-        private static double dt = 0.1;
-        private static string meshName = null,
-            conditionFileName = "example\\DEFAULT.heat";
-
         private static void Main(string[] args)
         {
-            Console.WriteLine();
+            var app = new CommandLineApplication();
+            app.Name = "femnet";
+            app.HelpOption("-?|-h|--help");
+
+            var meshArg = app.Argument("mesh", "Path to the mesh.");
+            var timeStepOption = app.Option("-dt", "Time step.", CommandOptionType.SingleValue);
+            var conditionFileOption = app.Option("-bc", "Path to the boundary condition file.", CommandOptionType.SingleValue);
+            app.OnExecute(() => {
+                if (meshArg.Value == null)
+                {
+                    Console.WriteLine("ERROR: Missing mesh.");
+                    return 1;
+                }
+                double dt = timeStepOption.HasValue() ? double.Parse(timeStepOption.Value()) : 0.1;
+                var conditionFileName = conditionFileOption.HasValue() ? conditionFileOption.Value() : "example\\DEFAULT.heat";
+                FEM2D.FEM2DProgram.Run(meshArg.Value, conditionFileName, dt);
+                return 0;
+            });
+
             try
             {
-                ParseArgs(args);
-                FEM2D.FEM2DProgram.Run(meshName, conditionFileName, dt);
+                Console.WriteLine();
+                app.Execute(args);
+                Console.WriteLine("Press ENTER to exit...");
+                Console.ReadLine();
             }
-            catch (ArgumentException exception)
+            catch (CommandParsingException exception)
             {
                 Console.WriteLine(exception.Message);
             }
@@ -30,49 +47,7 @@ namespace FEM_NET
             {
                 Console.WriteLine($"DIRECTORY NOT FOUND: {exception.Message}");
             }
-
-            Console.WriteLine("Press ENTER to exit...");
-            Console.ReadLine();
-        }
-
-        private static void ParseArgs(string[] args)
-        {
-            var argsQueue = new Queue<string>(args);
-            while (argsQueue.Count != 0)
-            {
-                var arg = argsQueue.Dequeue();
-                if (arg[0] != '-')
-                {
-                    if (meshName != null)
-                        Console.WriteLine($"Argument \"{arg}\" is ignored.");
-                    else
-                        meshName = arg;
-                        // TODO: Sanitize.
-                    continue;
-                }
-                switch (arg)
-                {
-                    case "-dt":
-                        if (argsQueue.Count == 0)
-                            throw new ArgumentException("ARGUMENT ERROR: Missing parameter for option \"-dt\".");
-                        dt = double.Parse(argsQueue.Dequeue());
-                        // TODO: Format exception.
-                    break;
-                    case "-bc":
-                        if (argsQueue.Count == 0)
-                            throw new ArgumentException("ARGUMENT ERROR: Missing parameter for option \"-bc\".");
-                        conditionFileName = argsQueue.Dequeue();
-                        // TODO: Sanitize.
-                    break;
-                    // TODO: -h / --help
-                    default:
-                        throw new ArgumentException($"ARGUMENT ERROR: Unknown option \"{arg}\".");
-                }
-            }
-            if (meshName == null)
-                throw new ArgumentException("ARGUMENT ERROR: Missing mesh name.");
-            if (meshName.EndsWith(".mesh"))
-                meshName = meshName.Substring(0, meshName.Length - 5);
+            return;
         }
     }
 }

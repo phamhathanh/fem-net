@@ -3,7 +3,7 @@ using static System.Math;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class FEM2DProgram
+    internal static class HeatProgram
     {
         public static void Run(string meshName, string conditionFileName, double timeStep, int timeStepCount, double accuracy)
         {

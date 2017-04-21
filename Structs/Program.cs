@@ -34,7 +34,7 @@ namespace FEM_NET
                 int it = timeStepNumberOption.HasValue() ? int.Parse(timeStepNumberOption.Value()) : 30;
                 double acc = accuracyOption.HasValue() ? double.Parse(accuracyOption.Value()) : 1e-6;
                 // TODO: Format error.
-                FEM2D.FEM2DProgram.Run(meshPath, conditionPath, dt, it, acc);
+                FEM2D.HeatProgram.Run(meshPath, conditionPath, dt, it, acc);
                 Console.WriteLine("Press ENTER to exit...");
                 Console.ReadLine();
                 return 0;

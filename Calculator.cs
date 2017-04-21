@@ -41,7 +41,7 @@ namespace FEM_NET
                 oldRho = newRho;
                 newRho = Vector.Dot(r, r);
 
-                if (newRho < epsilon * rho0)
+                if (newRho < epsilon)
                 {
                     iterations = i + 1;
                     break;
@@ -50,7 +50,6 @@ namespace FEM_NET
                 p = r + (newRho / oldRho) * p;
             }
             double error = (A * u - F).Norm;
-
             return new CGResult(u, iterations, error);
         }
 

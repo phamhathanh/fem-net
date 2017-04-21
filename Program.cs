@@ -13,11 +13,11 @@ namespace FEM_NET
             app.Name = "femnet";
             app.HelpOption("-?|-h|--help");
 
-            var meshArg = app.Argument("mesh", "Path to the mesh.");
-            var conditionFileOption = app.Option("-bc", "Path to the boundary condition file.", CommandOptionType.SingleValue);
-            var timeStepOption = app.Option("-dt", "Time step.", CommandOptionType.SingleValue);
-            var timeStepNumberOption = app.Option("-it", "Number of time steps.", CommandOptionType.SingleValue);
-            var accuracyOption = app.Option("-err", "Accuracy.", CommandOptionType.SingleValue);
+            var meshArg = app.Argument("mesh", "Path to the mesh");
+            var conditionFileOption = app.Option("-bc", "Path to the boundary condition file", CommandOptionType.SingleValue);
+            var timeStepOption = app.Option("-dt", "Time step", CommandOptionType.SingleValue);
+            var timeStepNumberOption = app.Option("-it", "Number of time steps", CommandOptionType.SingleValue);
+            var accuracyOption = app.Option("-err", "Accuracy", CommandOptionType.SingleValue);
             
             app.OnExecute(() => {
                 if (meshArg.Value == null)

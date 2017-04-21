@@ -109,16 +109,13 @@ Dimension 2
 
 SolAtVertices
 {mesh.Vertices.Count}
-2 2 1
+1 1
 ");
                 foreach (var vertex in mesh.Vertices)
-                    writer.WriteLine($"{solution.GetValueAt(vertex)} {vertex.Position.x} {vertex.Position.y}");
+                    writer.WriteLine($"{solution.GetValueAt(vertex)}");
 
                 writer.WriteLine(
 $@"
-SolAtTriangles
-0
-1 2
 
 End");
             }

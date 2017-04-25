@@ -31,6 +31,8 @@ namespace FEM_NET.FEM2D
             }
         }
 
+        public static IFiniteElementFactory Factory = triangle => new P1Element(triangle);
+
         public ReadOnlyCollection<INode> Nodes { get; }
         public Triangle Triangle { get; }
 
@@ -49,11 +51,5 @@ namespace FEM_NET.FEM2D
 
         public bool Contains(Vector2 point)
             => Nodes.All(node => node.Phi(point) >= 0);
-
-        public class Factory : IFiniteElementFactory
-        {
-            public IFiniteElement Create(Triangle triangle)
-                => new P1Element(triangle);
-        }
     }
 }

@@ -12,13 +12,15 @@ namespace FEM_NET.FEM2D
             var totalTimer = StartMeasuringTaskTime("Total");
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
-            var mesh = InOut.ReadMesh($"{meshName}.mesh", new P1Element.Factory());
-            var boundaryConditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
+            var conditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
+            var mesh = InOut.ReadMesh($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
             StopAndShowTaskTime(readInputTimer);
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
+
+            var feSpace = new FiniteElementSpace(mesh, P1Element.Factory);
 
             double a0 = 0;
             BilinearForm bilinearForm = (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + (1 + timeStep * a0) * u * v;
@@ -30,7 +32,7 @@ namespace FEM_NET.FEM2D
             for (int i = 0; i < timeStepCount; i++)
             {
                 Func<Vector2, double> rhs = v => previous.GetValueAt(v) + timeStep*f(v);
-                var laplaceEquation = new Problem(mesh, boundaryConditions, bilinearForm, rhs, accuracy);
+                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
                 previous = laplaceEquation.Solve();
             }
             InOut.WriteSolutionToFile($"{meshName}.sol", mesh, previous);
@@ -55,7 +57,7 @@ namespace FEM_NET.FEM2D
         private static void ShowMeshParameters(IMesh mesh)
         {
             Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
-            Console.WriteLine($"Number of finite elements: {mesh.FiniteElements.Count}");
+            Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");
         }
     }
 }

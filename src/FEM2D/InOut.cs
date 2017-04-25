@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
     internal static class InOut
     {
-        public static IMesh ReadMesh(string path, IFiniteElementFactory factory)
+        public static IMesh ReadMesh(string path)
         {
             using (var reader = File.OpenText(path))
             {
@@ -35,7 +36,7 @@ namespace FEM_NET.FEM2D
                     // TODO: Format exception.
 
                     var position = new Vector2(x, y);
-                    vertices[i] = new Vertex(position, reference);
+                    vertices[i] = new Vertex(position, i, reference);
                 }
 
                 do
@@ -63,7 +64,7 @@ namespace FEM_NET.FEM2D
 
                     triangles[i] = new Triangle(vertices[index0], vertices[index1], vertices[index2]);
                 }
-                return new Mesh(vertices, triangles, factory);
+                return new Mesh(triangles);
             }
         }
 
@@ -111,7 +112,10 @@ SolAtVertices
 {mesh.Vertices.Count}
 1 1
 ");
-                foreach (var vertex in mesh.Vertices)
+                var vertices = from vertex in mesh.Vertices
+                               orderby vertex.Index
+                               select vertex;
+                foreach (var vertex in vertices)
                     writer.WriteLine($"{solution.GetValueAt(vertex)}");
 
                 writer.WriteLine(

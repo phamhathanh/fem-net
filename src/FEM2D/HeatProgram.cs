@@ -13,7 +13,7 @@ namespace FEM_NET.FEM2D
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
             var conditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
-            var mesh = InOut.ReadMesh($"{meshName}.mesh");
+            var mesh = new MeshFromFile($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
             StopAndShowTaskTime(readInputTimer);

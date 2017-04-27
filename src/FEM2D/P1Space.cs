@@ -26,7 +26,6 @@ namespace FEM_NET.FEM2D
 
     internal sealed class P1Element : IFiniteElement
     {
-
         public ReadOnlyCollection<INode> Nodes { get; }
         public Triangle Triangle { get; }
 

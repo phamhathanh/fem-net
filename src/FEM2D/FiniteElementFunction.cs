@@ -46,7 +46,6 @@ namespace FEM_NET.FEM2D
                     foreach (var node in finiteElement.Nodes)
                         value += node.Phi(point) * valueByVertex[node.Vertex];
                     return value;
-                    // TODO: Delegate to IFiniteELement.
                 }
             throw new ArgumentException("Point is not within the mesh.");
         }

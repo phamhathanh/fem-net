@@ -20,7 +20,7 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpace = new P1Space(mesh);
+            var feSpace = new P1bSpace(mesh);
 
             double a0 = 0;
             BilinearForm bilinearForm = (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + (1 + timeStep * a0) * u * v;

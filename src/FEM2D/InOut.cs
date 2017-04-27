@@ -7,9 +7,9 @@ namespace FEM_NET.FEM2D
 {
     internal static class InOut
     {
-        public static Dictionary<int, Func<Vector2, double>> ReadBoundaryConditions(string path)
+        public static Dictionary<int, IFiniteElementFunction> ReadBoundaryConditions(string path)
         {
-            Dictionary<int, Func<Vector2, double>> conditions;
+            Dictionary<int, IFiniteElementFunction> conditions;
             using (var reader = File.OpenText(path))
             {
                 string rawString;
@@ -23,7 +23,7 @@ namespace FEM_NET.FEM2D
 
                 rawString = reader.ReadLine();
                 int conditionCount = int.Parse(rawString);
-                conditions = new Dictionary<int, Func<Vector2, double>>(conditionCount);
+                conditions = new Dictionary<int, IFiniteElementFunction>(conditionCount);
                 for (int i = 0; i < conditionCount; i++)
                 {
                     rawString = reader.ReadLine();
@@ -32,7 +32,7 @@ namespace FEM_NET.FEM2D
                     double value = double.Parse(words[3]);
                     // TODO: Parse function instead of constant.
 
-                    conditions.Add(reference, v => value);
+                    conditions.Add(reference, new LambdaFunction(v => value));
                 }
             }
             return conditions;
@@ -52,7 +52,7 @@ SolAtVertices
 1 1
 ");
                 foreach (var vertex in mesh.Vertices)
-                    writer.WriteLine($"{solution.GetValueAt(vertex)}");
+                    writer.WriteLine($"{solution.GetValueAt(vertex.Position)}");
 
                 writer.WriteLine(
 $@"

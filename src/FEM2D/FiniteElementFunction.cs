@@ -25,18 +25,6 @@ namespace FEM_NET.FEM2D
             }
         }
 
-        public double GetValueAt(Vertex vertex)
-        {
-            try
-            {
-                return valueByVertex[vertex];
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new ArgumentException("Vertex is not from the same mesh.");
-            }
-        }
-
         public double GetValueAt(Vector2 point)
         {
             foreach (var finiteElement in finiteElementSpace.FiniteElements)

@@ -31,13 +31,16 @@ namespace FEM_NET.FEM2D
             // TODO: Initial step from file
             for (int i = 0; i < timeStepCount; i++)
             {
-                Func<Vector2, double> rhs = v => previous.GetValueAt(v) + timeStep*f(v);
+                IFiniteElementFunction rhs = new LambdaFunction(v => previous.GetValueAt(v) + timeStep*f(v));
                 var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
                 previous = laplaceEquation.Solve();
             }
+            StopAndShowTaskTime(calculationTimer);
+            
+            var outputTimer = StartMeasuringTaskTime("Output");
             InOut.WriteSolutionToFile($"{meshName}.sol", mesh, previous);
 
-            StopAndShowTaskTime(calculationTimer);
+            StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);
         }
 

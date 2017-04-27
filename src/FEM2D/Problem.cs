@@ -8,16 +8,16 @@ namespace FEM_NET.FEM2D
         private const double VERY_LARGE_VALUE = 1e30;
 
         private readonly IFiniteElementSpace finiteElementSpace;
-        private readonly Func<Vector2, double> rightHandSide;
-        private readonly Dictionary<int, Func<Vector2, double>> boundaryConditions;
+        private readonly IFiniteElementFunction rightHandSide;
+        private readonly Dictionary<int, IFiniteElementFunction> boundaryConditions;
         private readonly BilinearForm bilinearForm;
         private readonly double accuracy;
 
         private Matrix A;
         private Vector rhs;
 
-        public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, Func<Vector2, double>> boundaryConditions,
-                        BilinearForm bilinearForm, Func<Vector2, double> rightHandSide,
+        public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, IFiniteElementFunction> boundaryConditions,
+                        BilinearForm bilinearForm, IFiniteElementFunction rightHandSide,
                         double accuracy)
         {
             this.finiteElementSpace = finiteElementSpace;
@@ -48,7 +48,7 @@ namespace FEM_NET.FEM2D
                     bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Reference);
                     if (isDirichletNode)
                     {
-                        var value = boundaryConditions[vertex.Reference](vertex.Position);
+                        var value = boundaryConditions[vertex.Reference].GetValueAt(vertex.Position);
                         rhs[i] += VERY_LARGE_VALUE*value;
                         A[i, i] += VERY_LARGE_VALUE;
                     }
@@ -61,7 +61,7 @@ namespace FEM_NET.FEM2D
                 foreach (var node in finiteElement.Nodes)
                 {
                     int i = indexByVertex[node.Vertex];
-                    rhs[i] += Calculator.Integrate(v => rightHandSide(v) * node.Phi(v), finiteElement.Triangle);
+                    rhs[i] += Calculator.Integrate(v => rightHandSide.GetValueAt(v) * node.Phi(v), finiteElement.Triangle);
                     foreach (var otherNode in finiteElement.Nodes)
                     {
                         int j = indexByVertex[otherNode.Vertex];

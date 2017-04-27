@@ -51,10 +51,7 @@ SolAtVertices
 {mesh.Vertices.Count}
 1 1
 ");
-                var vertices = from vertex in mesh.Vertices
-                               orderby vertex.Index
-                               select vertex;
-                foreach (var vertex in vertices)
+                foreach (var vertex in mesh.Vertices)
                     writer.WriteLine($"{solution.GetValueAt(vertex)}");
 
                 writer.WriteLine(

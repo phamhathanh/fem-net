@@ -4,7 +4,7 @@ namespace FEM_NET.FEM2D
 {
     internal interface IFiniteElementSpace
     {
-        IMesh Mesh { get; }
+        IReadOnlyCollection<Vertex> Vertices { get; }
         IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
     }
 }

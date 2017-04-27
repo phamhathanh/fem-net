@@ -36,35 +36,40 @@ namespace FEM_NET.FEM2D
 
         private void CalculateMatrixAndRHS()
         {
-            var n = finiteElementSpace.Mesh.Vertices.Count;
+            var n = finiteElementSpace.Vertices.Count;
             A = new Matrix(n, n);
             var rhs = new double[n];
 
-            foreach (var vertex in finiteElementSpace.Mesh.Vertices)
+            var indexByVertex = new Dictionary<Vertex, int>(n);
             {
-                bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Reference);
-                if (isDirichletNode)
+                int i = 0;
+                foreach (var vertex in finiteElementSpace.Vertices)
                 {
-                    var value = boundaryConditions[vertex.Reference](vertex.Position);
-                    int i = vertex.Index;
-                    rhs[i] += VERY_LARGE_VALUE*value;
-                    A[i, i] += VERY_LARGE_VALUE;
+                    bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Reference);
+                    if (isDirichletNode)
+                    {
+                        var value = boundaryConditions[vertex.Reference](vertex.Position);
+                        rhs[i] += VERY_LARGE_VALUE*value;
+                        A[i, i] += VERY_LARGE_VALUE;
+                    }
+                    indexByVertex.Add(vertex, i);
+                    i++;
                 }
             }
 
             foreach (var finiteElement in finiteElementSpace.FiniteElements)
                 foreach (var node in finiteElement.Nodes)
                 {
-                    int i = node.Vertex.Index;
+                    int i = indexByVertex[node.Vertex];
                     rhs[i] += Calculator.Integrate(v => rightHandSide(v) * node.Phi(v), finiteElement.Triangle);
                     foreach (var otherNode in finiteElement.Nodes)
                     {
-                        int j = otherNode.Vertex.Index;
+                        int j = indexByVertex[otherNode.Vertex];
                         Func<Vector2, double> localBilinearForm =
                             v => bilinearForm(node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v));
                         var integral = Calculator.Integrate(localBilinearForm, finiteElement.Triangle);
                         A[i, j] += integral;
-                        // Can be cached.
+                        // TODO: cache.
                     }
                 }
 

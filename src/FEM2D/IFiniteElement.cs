@@ -17,6 +17,4 @@ namespace FEM_NET.FEM2D
         Func<Vector2, double> Phi { get; }
         Func<Vector2, Vector2> GradPhi { get; }
     }
-    
-    internal delegate IFiniteElement IFiniteElementFactory(Triangle triangle);
 }

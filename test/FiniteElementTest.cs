@@ -13,7 +13,7 @@ namespace FEM_NET.Tests
             point1 = new Vector2(3.14412280564, 2.83125387555);
             point2 = new Vector2(3.19406000334, 2.75777352054);
             point3 = new Vector2(3.09485254952, 2.78690898426);
-            var triangle = new Triangle(new Vertex(point1, 0, 0), new Vertex(point2, 0, 0), new Vertex(point3, 0, 0));
+            var triangle = new Triangle(new Vertex(point1, 0), new Vertex(point2, 0), new Vertex(point3, 0));
             element = new P1Element(triangle);
         }
 

@@ -40,7 +40,7 @@ namespace FEM_NET.FEM2D
                     // TODO: Format exception.
 
                     var position = new Vector2(x, y);
-                    vertices[i] = new Vertex(position, i, reference);
+                    vertices[i] = new Vertex(position, reference);
                 }
 
                 do

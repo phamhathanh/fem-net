@@ -6,19 +6,30 @@ namespace FEM_NET.FEM2D
     internal class FiniteElementFunction : IFiniteElementFunction
     {
         private readonly IFiniteElementSpace finiteElementSpace;
-        private readonly Vector values;
+        private readonly Dictionary<Vertex, double> valueByVertex;
 
         public FiniteElementFunction(IFiniteElementSpace finiteElementSpace, Vector values)
         {
             this.finiteElementSpace = finiteElementSpace;
-            this.values = values;
+
+            int n = finiteElementSpace.Vertices.Count;
+            if (values.Length != n)
+                throw new ArgumentException($"Vector size ({values.Length} does not match the number of vertices ({n}).)");
+            
+            valueByVertex = new Dictionary<Vertex, double>(n);
+            int i = 0;
+            foreach (var vertex in finiteElementSpace.Vertices)
+            {
+                valueByVertex.Add(vertex, values[i]);
+                i++;
+            }
         }
 
         public double GetValueAt(Vertex vertex)
         {
             try
             {
-                return values[vertex.Index];
+                return valueByVertex[vertex];
             }
             catch (KeyNotFoundException)
             {
@@ -33,8 +44,9 @@ namespace FEM_NET.FEM2D
                 {
                     double value = 0;
                     foreach (var node in finiteElement.Nodes)
-                        value += node.Phi(point) * values[node.Vertex.Index];
+                        value += node.Phi(point) * valueByVertex[node.Vertex];
                     return value;
+                    // TODO: Delegate to IFiniteELement.
                 }
             throw new ArgumentException("Point is not within the mesh.");
         }

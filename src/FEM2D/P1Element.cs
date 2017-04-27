@@ -50,6 +50,6 @@ namespace FEM_NET.FEM2D
         }
 
         public bool Contains(Vector2 point)
-            => Nodes.All(node => node.Phi(point) >= 1e-5);
+            => Nodes.All(node => node.Phi(point) >= -1e-5);
     }
 }

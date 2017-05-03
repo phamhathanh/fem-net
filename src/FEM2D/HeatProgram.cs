@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using static System.Math;
 
 namespace FEM_NET.FEM2D
@@ -23,15 +24,28 @@ namespace FEM_NET.FEM2D
             var feSpace = new P1bSpace(mesh);
 
             double a0 = 0;
-            BilinearForm bilinearForm = (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + (1 + timeStep * a0) * u * v;
+            var bilinearForm = new BilinearForm[] {
+                (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + (1 + timeStep * a0) * u * v
+            };
+
+                /* 
+                 * Also: P1b vs P1 (variable from multiple finite element space)
+                 */
+
             Func<Vector2, double> f = v => 0,
                 u0 = v => 10 + 15*v.x;
 
-            IFiniteElementFunction previous = new LambdaFunction(u0);
+            var previous = new IFiniteElementFunction[]
+            {
+                new LambdaFunction(u0)
+            };
             // TODO: Initial step from file
             for (int i = 0; i < timeStepCount; i++)
             {
-                IFiniteElementFunction rhs = new LambdaFunction(v => previous.GetValueAt(v) + timeStep*f(v));
+                var rhs = new IFiniteElementFunction[]
+                {
+                    new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
+                };
                 var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
                 previous = laplaceEquation.Solve();
             }

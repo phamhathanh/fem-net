@@ -7,9 +7,9 @@ namespace FEM_NET.FEM2D
 {
     internal static class InOut
     {
-        public static Dictionary<int, IFiniteElementFunction> ReadBoundaryConditions(string path)
+        public static Dictionary<int, IFiniteElementFunction[]> ReadBoundaryConditions(string path)
         {
-            Dictionary<int, IFiniteElementFunction> conditions;
+            Dictionary<int, IFiniteElementFunction[]> conditions;
             using (var reader = File.OpenText(path))
             {
                 string rawString;
@@ -23,22 +23,25 @@ namespace FEM_NET.FEM2D
 
                 rawString = reader.ReadLine();
                 int conditionCount = int.Parse(rawString);
-                conditions = new Dictionary<int, IFiniteElementFunction>(conditionCount);
+                conditions = new Dictionary<int, IFiniteElementFunction[]>(conditionCount);
                 for (int i = 0; i < conditionCount; i++)
                 {
                     rawString = reader.ReadLine();
                     var words = rawString.Split(' ');   // TODO: Use separator.
                     int reference = int.Parse(words[0]);
-                    double value = double.Parse(words[3]);
+                    var values = from word in words.Skip(3)
+                                 select double.Parse(word);
+                    var condition = from value in values
+                                    select new LambdaFunction(v => value);
                     // TODO: Parse function instead of constant.
 
-                    conditions.Add(reference, new LambdaFunction(v => value));
+                    conditions.Add(reference, condition.ToArray());
                 }
             }
             return conditions;
         }
 
-        public static void WriteSolutionToFile(string path, IMesh mesh, IFiniteElementFunction solution)
+        public static void WriteSolutionToFile(string path, IMesh mesh, IFiniteElementFunction[] solution)
         {
             using (var writer = File.CreateText(path))
             {
@@ -52,7 +55,8 @@ SolAtVertices
 1 1
 ");
                 foreach (var vertex in mesh.Vertices)
-                    writer.WriteLine($"{solution.GetValueAt(vertex.Position)}");
+                    writer.WriteLine($"{solution[0].GetValueAt(vertex.Position)}");
+                    // TODO: 2D -> 2D case.
 
                 writer.WriteLine(
 $@"

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace FEM_NET
 {
-    internal sealed class Vector
+    internal sealed class Vector : IEnumerable<double>
     {
         private readonly double[] elements;
         private double? norm;
@@ -86,5 +87,11 @@ namespace FEM_NET
 
         public static Vector Normalize(Vector vector)
             => (1 / vector.Norm) * vector;
+
+        public IEnumerator<double> GetEnumerator()
+            => ((IEnumerable<double>)elements).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => ((IEnumerable<double>)elements).GetEnumerator();
     }
 }

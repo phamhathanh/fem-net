@@ -11,9 +11,6 @@ namespace FEM_NET.FEM2D
             this.function = function;
         }
 
-        public double GetValueAt(Vertex vertex)
-            => GetValueAt(vertex.Position);
-
         public double GetValueAt(Vector2 point)
             => function(point);
     }

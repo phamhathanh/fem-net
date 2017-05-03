@@ -8,21 +8,24 @@ namespace FEM_NET.FEM2D
         private readonly IFiniteElementSpace finiteElementSpace;
         private readonly Dictionary<Vertex, double> valueByVertex;
 
-        public FiniteElementFunction(IFiniteElementSpace finiteElementSpace, Vector values)
+        public FiniteElementFunction(IFiniteElementSpace finiteElementSpace, IEnumerable<double> values)
         {
             this.finiteElementSpace = finiteElementSpace;
 
             int n = finiteElementSpace.Vertices.Count;
-            if (values.Length != n)
-                throw new ArgumentException($"Vector size ({values.Length} does not match the number of vertices ({n}).)");
-            
             valueByVertex = new Dictionary<Vertex, double>(n);
-            int i = 0;
+            
+            int valueCount = 0;
+            var valueEnumerator = values.GetEnumerator();
             foreach (var vertex in finiteElementSpace.Vertices)
             {
-                valueByVertex.Add(vertex, values[i]);
-                i++;
+                valueEnumerator.MoveNext();
+                var value = valueEnumerator.Current;
+                valueByVertex.Add(vertex, value);
+                valueCount++;
             }
+            if (valueCount != n)
+                throw new ArgumentException($"The number of values ({valueCount} does not match the number of vertices ({n}).)");
         }
 
         public double GetValueAt(Vector2 point)

@@ -52,9 +52,7 @@ Dimension 2
 
 SolAtVertices");
                 writer.WriteLine(mesh.Vertices.Count);
-                for (int i = 0; i < solution.Length; i++)
-                    writer.Write($"{i + 1} ");
-                writer.WriteLine();
+                writer.WriteLine($"1 {solution.Length}");
                 writer.WriteLine();
                 foreach (var vertex in mesh.Vertices)
                 {

@@ -46,22 +46,24 @@ namespace FEM_NET.FEM2D
             using (var writer = File.CreateText(path))
             {
                 writer.WriteLine(
-$@"MeshVersionFormatted 1
+@"MeshVersionFormatted 1
 
 Dimension 2
 
-SolAtVertices
-{mesh.Vertices.Count}
-1 1
-");
+SolAtVertices");
+                writer.WriteLine(mesh.Vertices.Count);
+                for (int i = 0; i < solution.Length; i++)
+                    writer.Write($"{i + 1} ");
+                writer.WriteLine();
+                writer.WriteLine();
                 foreach (var vertex in mesh.Vertices)
-                    writer.WriteLine($"{solution[0].GetValueAt(vertex.Position)}");
-                    // TODO: 2D -> 2D case.
-
-                writer.WriteLine(
-$@"
-
-End");
+                {
+                    for (int i = 0; i < solution.Length; i++)
+                        writer.Write($"{solution[i].GetValueAt(vertex.Position)} ");
+                    writer.WriteLine();
+                }
+                writer.WriteLine();
+                writer.WriteLine("End");
             }
         }
     }

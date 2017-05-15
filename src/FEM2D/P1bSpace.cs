@@ -18,6 +18,7 @@ namespace FEM_NET.FEM2D
             {
                 var centerPos = (triangle.Vertex0.Position+triangle.Vertex1.Position+triangle.Vertex2.Position)/3;
                 var center = new Vertex(centerPos, 0);
+                // TODO: Use an unused reference label instead of 0.
                 vertices.Add(center);
 
                 var finiteElement = new P1bElement(triangle, center);

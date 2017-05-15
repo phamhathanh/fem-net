@@ -10,25 +10,21 @@ namespace FEM_NET.FEM2D
 
         private readonly IFiniteElementSpace finiteElementSpace;
         private readonly Dictionary<int, IFiniteElementFunction[]> boundaryConditions;
-        private readonly BilinearForm[] bilinearForm;
+        private readonly BilinearForm bilinearForm;
         private readonly IFiniteElementFunction[] rightHandSide;
-        private readonly int dim;
         private readonly double accuracy;
 
         private Matrix A;
         private Vector rhs;
 
         public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, IFiniteElementFunction[]> boundaryConditions,
-                        ICollection<BilinearForm> bilinearForm, ICollection<IFiniteElementFunction> rightHandSide,
+                        BilinearForm bilinearForm, ICollection<IFiniteElementFunction> rightHandSide,
                         double accuracy)
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
 
-            this.dim = bilinearForm.Count;
-            if (dim != rightHandSide.Count)
-                throw new ArgumentException("Dimension mismatch.");
-            this.bilinearForm = bilinearForm.ToArray();
+            this.bilinearForm = bilinearForm;
             this.rightHandSide = rightHandSide.ToArray();
             // TODO: Use ImmutableArray.
 
@@ -40,6 +36,8 @@ namespace FEM_NET.FEM2D
         {
             CalculateMatrixAndRHS();
             var rawSolution = Calculator.Solve(A, rhs, accuracy).vector;
+            
+            int dim = rightHandSide.Length;
             var solution = new IFiniteElementFunction[dim];
             var m = finiteElementSpace.Vertices.Count;
             for (int n = 0; n < dim; n++)
@@ -53,8 +51,9 @@ namespace FEM_NET.FEM2D
         private void CalculateMatrixAndRHS()
         {
             var vertexCount = finiteElementSpace.Vertices.Count;
+            int dim = rightHandSide.Length;
             A = new Matrix(vertexCount*dim, vertexCount*dim);
-            var rhs = new double[vertexCount];
+            var rhs = new double[vertexCount*dim];
 
             var indexByVertex = new Dictionary<Vertex, int>[dim];
             int index = 0;
@@ -82,14 +81,25 @@ namespace FEM_NET.FEM2D
                         int i = indexByVertex[n][node.Vertex];
                         rhs[i] += Calculator.Integrate(v => rightHandSide[n].GetValueAt(v) * node.Phi(v), finiteElement.Triangle);
                         foreach (var otherNode in finiteElement.Nodes)
-                        {
-                            int j = indexByVertex[n][otherNode.Vertex];
-                            Func<Vector2, double> localBilinearForm =
-                                v => bilinearForm[n](node.Phi(v), otherNode.Phi(v), node.GradPhi(v), otherNode.GradPhi(v));
-                            var integral = Calculator.Integrate(localBilinearForm, finiteElement.Triangle);
-                            A[i, j] += integral;
-                            // TODO: cache.
-                        }
+                            for (int m = 0; m < dim; m++)
+                            {
+                                int j = indexByVertex[m][otherNode.Vertex];
+                                Func<Vector2, double> localBilinearForm =
+                                    p => {
+                                        var u = new double[dim];
+                                        var v = new double[dim];
+                                        u[n] = node.Phi(p);
+                                        v[m] = otherNode.Phi(p);
+                                        var du = new Vector2[dim];
+                                        var dv = new Vector2[dim];
+                                        du[n] = node.GradPhi(p);
+                                        dv[m] = otherNode.GradPhi(p);
+                                        return bilinearForm(u, v, du, dv);
+                                    };
+                                var integral = Calculator.Integrate(localBilinearForm, finiteElement.Triangle);
+                                A[i, j] += integral;
+                                // TODO: cache.
+                            }
                     }
 
             this.rhs = new Vector(rhs);

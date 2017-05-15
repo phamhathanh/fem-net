@@ -4,7 +4,7 @@ using static System.Math;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class HeatProgram
+    internal static class ElasticProgram
     {
         public static void Run(string meshName, string conditionFileName, double timeStep, int timeStepCount, double accuracy)
         {
@@ -13,7 +13,6 @@ namespace FEM_NET.FEM2D
             var totalTimer = StartMeasuringTaskTime("Total");
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
-            var conditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
             var mesh = new MeshFromFile($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
@@ -21,37 +20,29 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpace = new P1bSpace(mesh);
-
-            double a0 = 0;
-            BilinearForm bilinearForm =
-                (u, v, du, dv) => timeStep * Vector2.Dot(du[0], dv[0]) + (1 + timeStep * a0) * u[0] * v[0];
-
-                /* 
-                 * Also: P1b vs P1 (variable from multiple finite element space)
-                 */
-
-            Func<Vector2, double> f = v => 0,
-                u0 = v => 10 + 15*v.x;
-
-            var previous = new IFiniteElementFunction[]
+            var conditions = new Dictionary<int, IFiniteElementFunction[]>()
             {
-                new LambdaFunction(u0)
+                [4] = new[] { new LambdaFunction(v => 0), new LambdaFunction(v => 0) }
             };
-            // TODO: Initial step from file
-            for (int i = 0; i < timeStepCount; i++)
-            {
-                var rhs = new IFiniteElementFunction[]
-                {
-                    new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
-                };
-                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
-                previous = laplaceEquation.Solve();
-            }
+            var feSpace = new P1bSpace(mesh);
+            // Some how doesn't work with P1.
+
+            double YOUNG_MODULUS = 21e5, POISSON_RATIO = 0.28,
+                MU = YOUNG_MODULUS/(2*(1+POISSON_RATIO)),
+                LAMBDA = YOUNG_MODULUS*POISSON_RATIO/((1+POISSON_RATIO)*(1-2*POISSON_RATIO));
+            BilinearForm bilinearForm =
+                (u, v, du, dv) => LAMBDA*(du[0].x + du[1].y)*(dv[0].x + dv[1].y)
+                                + MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y + (du[0].y+du[1].x)*(dv[0].y+dv[1].x));
+
+            // TODO: Try not to use array allover the place.;
+
+            var rhs = new IFiniteElementFunction[] { new LambdaFunction(v => 0), new LambdaFunction(v => -1) };
+            var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+            var solution = laplaceEquation.Solve();
             StopAndShowTaskTime(calculationTimer);
             
             var outputTimer = StartMeasuringTaskTime("Output");
-            InOut.WriteSolutionToFile($"{meshName}.sol", mesh, previous);
+            InOut.WriteSolutionToFile($"{meshName}.sol", mesh, solution);
 
             StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);

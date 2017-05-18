@@ -6,7 +6,9 @@ namespace FEM_NET.FEM2D
 {
     internal static class ElasticProgram
     {
-        public static void Run(string meshName, string conditionFileName, double timeStep, int timeStepCount, double accuracy)
+        public static void Run(string meshName, string finiteElementType,
+                            string conditionFileName, double timeStep,
+                            int timeStepCount, double accuracy)
         {
             Console.WriteLine();
             Console.WriteLine("Solving...");
@@ -19,13 +21,19 @@ namespace FEM_NET.FEM2D
             StopAndShowTaskTime(readInputTimer);
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
+            
+            var feSpaceFactoryByName = new Dictionary<string, FiniteElementSpaceFactory>() {
+                ["p1"] = P1Space.Create,
+                ["p1b"] = P1bSpace.Create };
+            if (!feSpaceFactoryByName.ContainsKey(finiteElementType))
+                throw new ArgumentException("Unknown or unimplemented finite element type.");
+            var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
+            // Some how doesn't work with P1.
 
             var conditions = new Dictionary<int, IFiniteElementFunction[]>()
             {
                 [4] = new[] { new LambdaFunction(v => 0), new LambdaFunction(v => 0) }
             };
-            var feSpace = new P1bSpace(mesh);
-            // Some how doesn't work with P1.
 
             double YOUNG_MODULUS = 21e5, POISSON_RATIO = 0.28,
                 MU = YOUNG_MODULUS/(2*(1+POISSON_RATIO)),

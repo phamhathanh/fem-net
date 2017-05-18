@@ -12,15 +12,15 @@ namespace FEM_NET.FEM2D
 
         public P1Space(IMesh mesh)
         {
-            Vertices = mesh.Vertices;
+            Vertices = (new List<Vertex>(mesh.Vertices)).AsReadOnly();
 
-            var finiteElements = new HashSet<IFiniteElement>();
+            var finiteElements = new List<IFiniteElement>();
             foreach (var triangle in mesh.Triangles)
             {
                 var finiteElement = new P1Element(triangle);
                 finiteElements.Add(finiteElement);
             }
-            FiniteElements = finiteElements;
+            FiniteElements = finiteElements.AsReadOnly();
         }
     }
 
@@ -64,9 +64,9 @@ namespace FEM_NET.FEM2D
                 b = x2 - x3,
                 c = y2 * x3 - x2 * y3,
                 denominator = a * x1 + b * y1 + c;
-            Phi = point => (a * point.x + b * point.y + c) / denominator;
+            Phi = p => (a * p.x + b * p.y + c) / denominator;
 
-            var gradient = (1 / denominator) * (new Vector2(a, b));
+            var gradient = (new Vector2(a, b)) / denominator;
             GradPhi = point => gradient;
         }
     }

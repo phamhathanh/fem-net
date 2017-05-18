@@ -34,8 +34,6 @@ namespace FEM_NET.FEM2D
                 (u, v, du, dv) => LAMBDA*(du[0].x + du[1].y)*(dv[0].x + dv[1].y)
                                 + MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y + (du[0].y+du[1].x)*(dv[0].y+dv[1].x));
 
-            // TODO: Try not to use array allover the place.;
-
             var rhs = new IFiniteElementFunction[] { new LambdaFunction(v => 0), new LambdaFunction(v => -1) };
             var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
             var solution = laplaceEquation.Solve();

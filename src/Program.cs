@@ -16,12 +16,13 @@ namespace FEM_NET
 
             var meshArg = app.Argument("mesh", "Path to the mesh");
 
-            var elementTypeOption = app.Option("-t", "Finite element type", CommandOptionType.SingleValue);
-            var accuracyOption = app.Option("-err", "Accuracy", CommandOptionType.SingleValue);
+            var elementTypeOption = app.Option("-t|--type", "Finite element type", CommandOptionType.SingleValue);
+            var accuracyOption = app.Option("-a|-accuracy", "Accuracy", CommandOptionType.SingleValue);
 
             var conditionFileOption = app.Option("-bc", "Path to the boundary condition file", CommandOptionType.SingleValue);
             var timeStepOption = app.Option("-dt", "Time step", CommandOptionType.SingleValue);
             var timeStepNumberOption = app.Option("-it", "Number of time steps", CommandOptionType.SingleValue);
+            // TODO: Consider removing.
             
             app.OnExecute(() => {
                 if (meshArg.Value == null)

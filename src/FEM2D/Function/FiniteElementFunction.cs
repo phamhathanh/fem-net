@@ -25,7 +25,7 @@ namespace FEM_NET.FEM2D
                 valueCount++;
             }
             if (valueCount != n)
-                throw new ArgumentException($"The number of values ({valueCount} does not match the number of vertices ({n}).)");
+                throw new ArgumentException($"The number of values ({valueCount}) does not match the number of vertices ({n}).");
         }
 
         public double GetValueAt(Vector2 point)

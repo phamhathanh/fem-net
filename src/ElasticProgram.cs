@@ -15,7 +15,7 @@ namespace FEM_NET.FEM2D
             var totalTimer = StartMeasuringTaskTime("Total");
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
-            var mesh = new MeshFromFile($"{meshName}.mesh");
+            var mesh = Mesh.ReadFromFile($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
             StopAndShowTaskTime(readInputTimer);
@@ -30,7 +30,7 @@ namespace FEM_NET.FEM2D
             var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
             // Some how doesn't work with P1.
 
-            var conditions = new Dictionary<int, IFiniteElementFunction[]>()
+            var conditions = new Dictionary<int, IFunction[]>()
             {
                 [4] = new[] { new LambdaFunction(v => 0), new LambdaFunction(v => 0) }
             };
@@ -42,7 +42,7 @@ namespace FEM_NET.FEM2D
                 (u, v, du, dv) => LAMBDA*(du[0].x + du[1].y)*(dv[0].x + dv[1].y)
                                 + MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y + (du[0].y+du[1].x)*(dv[0].y+dv[1].x));
 
-            var rhs = new IFiniteElementFunction[] { new LambdaFunction(v => 0), new LambdaFunction(v => -1) };
+            var rhs = new IFunction[] { new LambdaFunction(v => 0), new LambdaFunction(v => -1) };
             var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
             var solution = laplaceEquation.Solve();
             StopAndShowTaskTime(calculationTimer);
@@ -67,7 +67,7 @@ namespace FEM_NET.FEM2D
             Console.WriteLine($"{timer.Name} time: {timer.Elapsed.TotalSeconds:F3} sec");
         }
 
-        private static void ShowMeshParameters(IMesh mesh)
+        private static void ShowMeshParameters(Mesh mesh)
         {
             Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
             Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");

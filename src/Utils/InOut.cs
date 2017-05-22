@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FEM_NET.FEM2D;
 
-namespace FEM_NET.FEM2D
+namespace FEM_NET
 {
     internal static class InOut
     {
-        public static Dictionary<int, IFiniteElementFunction[]> ReadBoundaryConditions(string path)
+        public static Dictionary<int, IFunction[]> ReadBoundaryConditions(string path)
         {
-            Dictionary<int, IFiniteElementFunction[]> conditions;
+            Dictionary<int, IFunction[]> conditions;
             using (var reader = File.OpenText(path))
             {
                 string rawString;
@@ -23,7 +24,7 @@ namespace FEM_NET.FEM2D
 
                 rawString = reader.ReadLine();
                 int conditionCount = int.Parse(rawString);
-                conditions = new Dictionary<int, IFiniteElementFunction[]>(conditionCount);
+                conditions = new Dictionary<int, IFunction[]>(conditionCount);
                 for (int i = 0; i < conditionCount; i++)
                 {
                     rawString = reader.ReadLine();
@@ -41,7 +42,7 @@ namespace FEM_NET.FEM2D
             return conditions;
         }
 
-        public static void WriteSolutionToFile(string path, IMesh mesh, IFiniteElementFunction[] solution)
+        public static void WriteSolutionToFile(string path, Mesh mesh, IFunction[] solution)
         {
             using (var writer = File.CreateText(path))
             {

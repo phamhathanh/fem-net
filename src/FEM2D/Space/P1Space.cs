@@ -10,7 +10,7 @@ namespace FEM_NET.FEM2D
         public IReadOnlyCollection<Vertex> Vertices { get; }
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
 
-        public P1Space(IMesh mesh)
+        public P1Space(Mesh mesh)
         {
             Vertices = (new List<Vertex>(mesh.Vertices)).AsReadOnly();
 
@@ -23,7 +23,7 @@ namespace FEM_NET.FEM2D
             FiniteElements = finiteElements.AsReadOnly();
         }
 
-        public static P1Space Create(IMesh mesh)
+        public static P1Space Create(Mesh mesh)
             => new P1Space(mesh);
     }
 

@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal class MeshFromFile : IMesh
+    internal sealed class Mesh
     {
         public IReadOnlyCollection<Vertex> Vertices { get; }
         public IReadOnlyCollection<Triangle> Triangles { get; }
 
-        public MeshFromFile(string path)
+        public static Mesh ReadFromFile(string path)
         {
             using (var reader = File.OpenText(path))
             {
@@ -68,9 +68,14 @@ namespace FEM_NET.FEM2D
 
                     triangles[i] = new Triangle(vertices[index0], vertices[index1], vertices[index2]);
                 }
-                Vertices = new ReadOnlyCollection<Vertex>(vertices);
-                Triangles = new ReadOnlyCollection<Triangle>(triangles);
+                return new Mesh(vertices, triangles);
             }
+        }
+
+        private Mesh(Vertex[] vertices, Triangle[] triangles)
+        {
+            Vertices = new ReadOnlyCollection<Vertex>(vertices);
+            Triangles = new ReadOnlyCollection<Triangle>(triangles);
         }
     }
 }

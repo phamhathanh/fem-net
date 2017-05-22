@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FEM_NET.FEM2D
 {
-    internal class FiniteElementFunction : IFiniteElementFunction
+    internal class FiniteElementFunction : IFunction
     {
         private readonly IFiniteElementSpace finiteElementSpace;
         private readonly Dictionary<Vertex, double> valueByVertex;

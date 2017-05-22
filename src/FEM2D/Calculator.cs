@@ -1,7 +1,7 @@
 ﻿using FEM_NET.FEM2D;
 using System;
 
-namespace FEM_NET
+namespace FEM_NET.FEM2D
 {
     static class Calculator
     {
@@ -54,7 +54,6 @@ namespace FEM_NET
         }
 
         public static double Integrate(Func<Vector2, double> function, Triangle triangle)
-        // TODO: Use finite element function.
         {
             // Gaussian quadrature coefficents
             var w = new[] { 0.225,

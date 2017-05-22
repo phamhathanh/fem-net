@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal interface IFiniteElementFunction
+    internal interface IFunction
     {
         double GetValueAt(Vector2 point);
     }

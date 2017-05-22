@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal class LambdaFunction : IFiniteElementFunction
+    internal class LambdaFunction : IFunction
     {
         private readonly Func<Vector2, double> function;
 

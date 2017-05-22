@@ -8,5 +8,5 @@ namespace FEM_NET.FEM2D
         IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
     }
 
-    internal delegate IFiniteElementSpace FiniteElementSpaceFactory(IMesh mesh);
+    internal delegate IFiniteElementSpace FiniteElementSpaceFactory(Mesh mesh);
 }

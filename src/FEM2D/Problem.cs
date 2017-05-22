@@ -9,17 +9,18 @@ namespace FEM_NET.FEM2D
         private const double VERY_LARGE_VALUE = 1e30;
 
         private readonly IFiniteElementSpace finiteElementSpace;
-        private readonly Dictionary<int, IFiniteElementFunction[]> boundaryConditions;
+        private readonly Dictionary<int, IFunction[]> boundaryConditions;
         private readonly BilinearForm bilinearForm;
-        private readonly IFiniteElementFunction[] rightHandSide;
+        private readonly IFunction[] rightHandSide;
         private readonly double accuracy;
 
         private Matrix A;
         private Vector rhs;
 
-        public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, IFiniteElementFunction[]> boundaryConditions,
-                        BilinearForm bilinearForm, ICollection<IFiniteElementFunction> rightHandSide,
+        public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, IFunction[]> boundaryConditions,
+                        BilinearForm bilinearForm, ICollection<IFunction> rightHandSide,
                         double accuracy)
+                        // TODO: use vector valued function instead of array of scalar
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
@@ -31,14 +32,14 @@ namespace FEM_NET.FEM2D
             this.accuracy = accuracy;
         }
 
-        public IFiniteElementFunction[] Solve()
+        public IFunction[] Solve()
         // TODO: Use ImmutableArray.
         {
             CalculateMatrixAndRHS();
             var rawSolution = Calculator.Solve(A, rhs, accuracy).vector;
             
             int dim = rightHandSide.Length;
-            var solution = new IFiniteElementFunction[dim];
+            var solution = new IFunction[dim];
             var m = finiteElementSpace.Vertices.Count;
             for (int n = 0; n < dim; n++)
             {

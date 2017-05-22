@@ -14,7 +14,7 @@ namespace FEM_NET.FEM2D
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
             var conditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
-            var mesh = new MeshFromFile($"{meshName}.mesh");
+            var mesh = Mesh.ReadFromFile($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
             StopAndShowTaskTime(readInputTimer);
@@ -34,14 +34,14 @@ namespace FEM_NET.FEM2D
             Func<Vector2, double> f = v => 0,
                 u0 = v => 10 + 15*v.x;
 
-            var previous = new IFiniteElementFunction[]
+            var previous = new IFunction[]
             {
                 new LambdaFunction(u0)
             };
             // TODO: Initial step from file
             for (int i = 0; i < timeStepCount; i++)
             {
-                var rhs = new IFiniteElementFunction[]
+                var rhs = new IFunction[]
                 {
                     new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
                 };
@@ -70,7 +70,7 @@ namespace FEM_NET.FEM2D
             Console.WriteLine($"{timer.Name} time: {timer.Elapsed.TotalSeconds:F3} sec");
         }
 
-        private static void ShowMeshParameters(IMesh mesh)
+        private static void ShowMeshParameters(Mesh mesh)
         {
             Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
             Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");

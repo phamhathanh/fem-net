@@ -36,7 +36,7 @@ namespace FEM_NET.FEM2D
         // TODO: Use ImmutableArray.
         {
             CalculateMatrixAndRHS();
-            var rawSolution = Calculator.Solve(A, rhs, accuracy).vector;
+            var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy).vector;
             
             int dim = rightHandSide.Length;
             var solution = new IFunction[dim];
@@ -80,7 +80,7 @@ namespace FEM_NET.FEM2D
                     for (int n = 0; n < dim; n++)
                     {
                         int i = indexByVertex[n][node.Vertex];
-                        rhs[i] += Calculator.Integrate(v => rightHandSide[n].GetValueAt(v) * node.Phi(v), finiteElement.Triangle);
+                        rhs[i] += GaussianQuadrature.Integrate(v => rightHandSide[n].GetValueAt(v) * node.Phi(v), finiteElement.Triangle);
                         foreach (var otherNode in finiteElement.Nodes)
                             for (int m = 0; m < dim; m++)
                             {
@@ -97,7 +97,7 @@ namespace FEM_NET.FEM2D
                                         dv[m] = otherNode.GradPhi(p);
                                         return bilinearForm(u, v, du, dv);
                                     };
-                                var integral = Calculator.Integrate(localBilinearForm, finiteElement.Triangle);
+                                var integral = GaussianQuadrature.Integrate(localBilinearForm, finiteElement.Triangle);
                                 A[i, j] += integral;
                                 // TODO: cache.
                             }

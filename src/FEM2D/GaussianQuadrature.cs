@@ -3,56 +3,8 @@ using System;
 
 namespace FEM_NET.FEM2D
 {
-    static class Calculator
+    internal static class GaussianQuadrature
     {
-        public struct CGResult
-        {
-            public readonly Vector vector;
-            public readonly int iterations;
-            public readonly double error;
-
-            public CGResult(Vector vector, int iterations, double error)
-            {
-                this.vector = vector;
-                this.iterations = iterations;
-                this.error = error;
-            }
-        }
-
-        public static CGResult Solve(Matrix A, Vector F, double epsilon)
-        {
-            int M = F.Length;
-
-            Vector r, u, p, s;
-            double alpha, rho0, oldRho, newRho;
-
-            u = new Vector(new double[M]);
-            r = A * u - F;
-            p = 1 * r;
-            newRho = rho0 = Vector.Dot(r, r);
-
-            int iterations = 0;
-            for (int i = 0; i < M; i++)
-            {
-                s = A * p;
-                alpha = newRho / Vector.Dot(s, p);
-                u = u - alpha * p;
-                r = r - alpha * s;
-                oldRho = newRho;
-                newRho = Vector.Dot(r, r);
-
-                if (newRho < epsilon)
-                {
-                    iterations = i + 1;
-                    break;
-                }
-
-                p = r + (newRho / oldRho) * p;
-            }
-            double error = (A * u - F).Norm;
-            return new CGResult(u, iterations, error);
-        }
-
         public static double Integrate(Func<Vector2, double> function, Triangle triangle)
         {
             // Gaussian quadrature coefficents

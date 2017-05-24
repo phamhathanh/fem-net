@@ -31,8 +31,7 @@ namespace FEM_NET.FEM2D
             p = 1 * r;
             newRho = rho0 = Vector.Dot(r, r);
 
-            int i = 0;
-            for (; i < M; i++)
+            for (int i = 0; i < M; i++)
             {
                 s = A * p;
                 alpha = newRho / Vector.Dot(s, p);
@@ -44,13 +43,12 @@ namespace FEM_NET.FEM2D
                 if (newRho < epsilon)
                 {
                     i++;
-                    break;
+                    return new Result(u, i, newRho);
                 }
 
                 p = r + (newRho / oldRho) * p;
             }
-            double error = (A * u - F).Norm;
-            return new Result(u, i, error);
+            throw new ArgumentException("Diverged.");
         }
     }
 }

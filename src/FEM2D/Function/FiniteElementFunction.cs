@@ -40,5 +40,17 @@ namespace FEM_NET.FEM2D
                 }
             throw new ArgumentException("Point is not within the mesh.");
         }
+
+        public double GetValueAt(Vertex vertex)
+        {
+            try
+            {
+                return valueByVertex[vertex];
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new ArgumentException("Vertex is not from the same mesh.");
+            }
+        }
     }
 }

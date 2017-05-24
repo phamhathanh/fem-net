@@ -18,11 +18,6 @@ namespace FEM_NET
 
             var elementTypeOption = app.Option("-t|--type", "Finite element type", CommandOptionType.SingleValue);
             var accuracyOption = app.Option("-a|-accuracy", "Accuracy", CommandOptionType.SingleValue);
-
-            var conditionFileOption = app.Option("-bc", "Path to the boundary condition file", CommandOptionType.SingleValue);
-            var timeStepOption = app.Option("-dt", "Time step", CommandOptionType.SingleValue);
-            var timeStepNumberOption = app.Option("-it", "Number of time steps", CommandOptionType.SingleValue);
-            // TODO: Consider removing.
             
             app.OnExecute(() => {
                 if (meshArg.Value == null)
@@ -35,14 +30,13 @@ namespace FEM_NET
                     meshPath = meshPath.Substring(0, meshPath.Length - 5);
 
                 var feType = elementTypeOption.HasValue() ? elementTypeOption.Value().ToLowerInvariant() : "p1";
-
-                var conditionPath = conditionFileOption.HasValue() ? conditionFileOption.Value() : $"example{Path.DirectorySeparatorChar}DEFAULT.heat";
-                double dt = timeStepOption.HasValue() ? double.Parse(timeStepOption.Value()) : 0.1;
-                int it = timeStepNumberOption.HasValue() ? int.Parse(timeStepNumberOption.Value()) : 30;
-                double acc = accuracyOption.HasValue() ? double.Parse(accuracyOption.Value()) : 1e-6;
+                double accuracy = accuracyOption.HasValue() ? double.Parse(accuracyOption.Value()) : 1e-6;
                 // TODO: Format error.
-                FEM2D.ElasticProgram.Run(meshPath, feType, conditionPath, dt, it, acc);
-                Console.WriteLine("Press ENTER to exit...");
+
+                Console.WriteLine("\nSolving...\n");
+                FEM2D.HeatProgram.Run(meshPath, feType, accuracy);
+
+                Console.WriteLine("\nPress ENTER to exit...");
                 Console.ReadLine();
                 return 0;
             });

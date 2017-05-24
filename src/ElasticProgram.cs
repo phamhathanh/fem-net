@@ -6,12 +6,8 @@ namespace FEM_NET.FEM2D
 {
     internal static class ElasticProgram
     {
-        public static void Run(string meshName, string finiteElementType,
-                            string conditionFileName, double timeStep,
-                            int timeStepCount, double accuracy)
+        public static void Run(string meshName, string finiteElementType, double accuracy)
         {
-            Console.WriteLine();
-            Console.WriteLine("Solving...");
             var totalTimer = StartMeasuringTaskTime("Total");
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");

@@ -6,14 +6,11 @@ namespace FEM_NET.FEM2D
 {
     internal static class HeatProgram
     {
-        public static void Run(string meshName, string conditionFileName, double timeStep, int timeStepCount, double accuracy)
+        public static void Run(string meshName, string finiteElementType, double accuracy)
         {
-            Console.WriteLine();
-            Console.WriteLine("Solving...");
             var totalTimer = StartMeasuringTaskTime("Total");
 
             var readInputTimer = StartMeasuringTaskTime("Read input files");
-            var conditions = InOut.ReadBoundaryConditions($"{conditionFileName}");
             var mesh = Mesh.ReadFromFile($"{meshName}.mesh");
 
             ShowMeshParameters(mesh);
@@ -21,40 +18,57 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpace = new P1bSpace(mesh);
+            var feSpaceFactoryByName = new Dictionary<string, FiniteElementSpaceFactory>() {
+                ["p1"] = P1Space.Create,
+                ["p1b"] = P1bSpace.Create };
+            if (!feSpaceFactoryByName.ContainsKey(finiteElementType))
+                throw new ArgumentException("Unknown or unimplemented finite element type.");
+            var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
 
-            double a0 = 0;
-            BilinearForm bilinearForm =
-                (u, v, du, dv) => timeStep * Vector2.Dot(du[0], dv[0]) + (1 + timeStep * a0) * u[0] * v[0];
-
-                /* 
-                 * Also: P1b vs P1 (variable from multiple finite element space)
-                 */
-
-            Func<Vector2, double> f = v => 0,
-                u0 = v => 10 + 15*v.x;
-
-            var previous = new IFunction[]
+            var conditions = new Dictionary<int, IFunction[]>()
             {
-                new LambdaFunction(u0)
+                [1] = new[] { new LambdaFunction(v => 25) }
             };
-            // TODO: Initial step from file
-            for (int i = 0; i < timeStepCount; i++)
-            {
-                var rhs = new IFunction[]
-                {
-                    new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
-                };
-                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
-                previous = laplaceEquation.Solve();
-            }
+            
+            BilinearForm bilinearForm =
+                (u, v, du, dv) => Vector2.Dot(du[0], dv[0]);
+            var rhs = new[] { new LambdaFunction(v => -4) };
+            var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+            var solution = poisson.Solve();
+            
             StopAndShowTaskTime(calculationTimer);
+            var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
+
+            Func<Vector2, double> uExact = v => (v.x-0.5)*(v.x-0.5) + (v.y-0.5)*(v.y-0.5) - 0.25 + 25;
+            var error = CalculateError(feSpace, uExact, (FiniteElementFunction)solution[0]);
+            Console.WriteLine($"L2 Error = {error}");
+
+            StopAndShowTaskTime(errorCalculationTimer);
             
             var outputTimer = StartMeasuringTaskTime("Output");
-            InOut.WriteSolutionToFile($"{meshName}.sol", mesh, previous);
+            InOut.WriteSolutionToFile($"{meshName}.sol", mesh, solution);
 
             StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);
+        }
+
+        private static double CalculateError(IFiniteElementSpace feSpace,
+                        Func<Vector2, double> exactSolution, FiniteElementFunction solution)
+        {
+            double squareError = 0;
+            foreach (var element in feSpace.FiniteElements)
+            {
+                Func<Vector2, double> error = v =>
+                {
+                    double u0 = exactSolution(v),
+                        uh0 = 0;
+                    foreach (var node in element.Nodes)
+                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex);
+                    return (u0 - uh0) * (u0 - uh0);
+                };
+                squareError += GaussianQuadrature.Integrate(error, element.Triangle);
+            }
+            return Sqrt(squareError);
         }
 
         private static Timer StartMeasuringTaskTime(string taskName)

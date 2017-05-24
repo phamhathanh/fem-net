@@ -43,6 +43,7 @@ namespace FEM_NET.FEM2D
                 if (newRho < epsilon)
                 {
                     i++;
+                    Console.WriteLine($"CG Error = {newRho}");
                     return new Result(u, i, newRho);
                 }
 

@@ -30,4 +30,5 @@ msbuild.err
 msbuild.wrn
 
 # Algorithm result
-*.sol
+example/**/*.sol
+example/**/*.log

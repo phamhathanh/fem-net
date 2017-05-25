@@ -6,12 +6,11 @@ namespace FEM_NET.FEM2D
 {
     internal static class HeatProgram
     {
-        public static void Run(string meshName, string finiteElementType, double accuracy)
+        public static void Run(string meshPath, string finiteElementType, double accuracy)
         {
             var totalTimer = StartMeasuringTaskTime("Total");
-
             var readInputTimer = StartMeasuringTaskTime("Read input files");
-            var mesh = Mesh.ReadFromFile($"{meshName}.mesh");
+            var mesh = Mesh.ReadFromFile($"{meshPath}.mesh");
 
             ShowMeshParameters(mesh);
             StopAndShowTaskTime(readInputTimer);
@@ -46,7 +45,7 @@ namespace FEM_NET.FEM2D
             StopAndShowTaskTime(errorCalculationTimer);
             
             var outputTimer = StartMeasuringTaskTime("Output");
-            InOut.WriteSolutionToFile($"{meshName}.sol", mesh, solution);
+            InOut.WriteSolutionToFile($"{meshPath}.sol", mesh, solution);
 
             StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);

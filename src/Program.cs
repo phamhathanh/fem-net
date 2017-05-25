@@ -16,8 +16,8 @@ namespace FEM_NET
 
             var meshArg = app.Argument("mesh", "Path to the mesh");
 
-            var elementTypeOption = app.Option("-t|--type", "Finite element type", CommandOptionType.SingleValue);
-            var accuracyOption = app.Option("-a|-accuracy", "Accuracy", CommandOptionType.SingleValue);
+            var elementTypeOption = app.Option("-e|--element-type", "Finite element type", CommandOptionType.SingleValue);
+            var accuracyOption = app.Option("-a|--accuracy", "Accuracy", CommandOptionType.SingleValue);
             
             app.OnExecute(() => {
                 if (meshArg.Value == null)
@@ -34,8 +34,16 @@ namespace FEM_NET
                 // TODO: Format error.
 
                 Console.WriteLine("\nSolving...\n");
-                FEM2D.HeatProgram.Run(meshPath, feType, accuracy);
 
+                var stdWriter = Console.Out;
+                using (var fileWriter = File.CreateText($"{meshPath}.log"))
+                using (var mirrorWriter = new MirrorWriter(stdWriter, fileWriter))
+                {
+                    Console.SetOut(mirrorWriter);
+                    FEM2D.HeatProgram.Run(meshPath, feType, accuracy);
+                }
+                
+                Console.SetOut(stdWriter);
                 Console.WriteLine("\nPress ENTER to exit...");
                 Console.ReadLine();
                 return 0;

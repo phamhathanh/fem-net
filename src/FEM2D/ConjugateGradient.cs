@@ -5,51 +5,37 @@ namespace FEM_NET.FEM2D
 {
     internal static class ConjugateGradient
     {
-        public struct Result
+        public static Vector Solve(Matrix A, Vector F, double epsilon)
         {
-            public readonly Vector vector;
-            public readonly int iterations;
-            public readonly double error;
+            int n = F.Length;
 
-            public Result(Vector vector, int iterations, double error)
+            var u = new Vector(new double[n]);
+            var r = A * u - F;
+            var p = 1 * r;
+            // For deep copying.
+            
+            double oldRho,
+                rho = Vector.Dot(r, r);
+
+            for (int i = 0; i < n; i++)
             {
-                this.vector = vector;
-                this.iterations = iterations;
-                this.error = error;
-            }
-        }
+                var s = A * p;
+                var alpha = rho / Vector.Dot(s, p);
+                u -= alpha * p;
+                r -= alpha * s;
+                oldRho = rho;
+                rho = Vector.Dot(r, r);
 
-        public static Result Solve(Matrix A, Vector F, double epsilon)
-        {
-            int M = F.Length;
-
-            Vector r, u, p, s;
-            double alpha, rho0, oldRho, newRho;
-
-            u = new Vector(new double[M]);
-            r = A * u - F;
-            p = 1 * r;
-            newRho = rho0 = Vector.Dot(r, r);
-
-            for (int i = 0; i < M; i++)
-            {
-                s = A * p;
-                alpha = newRho / Vector.Dot(s, p);
-                u = u - alpha * p;
-                r = r - alpha * s;
-                oldRho = newRho;
-                newRho = Vector.Dot(r, r);
-
-                if (newRho < epsilon)
+                if (rho < epsilon)
                 {
                     i++;
-                    Console.WriteLine($"CG Error = {newRho}");
-                    return new Result(u, i, newRho);
+                    Console.WriteLine($"CG error = {rho}");
+                    return u;
                 }
 
-                p = r + (newRho / oldRho) * p;
+                p = r + (rho / oldRho) * p;
             }
-            throw new ArgumentException("Diverged.");
+            throw new ArgumentException($"Diverged: Error = {rho}");
         }
     }
 }

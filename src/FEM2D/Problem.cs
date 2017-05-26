@@ -36,7 +36,7 @@ namespace FEM_NET.FEM2D
         // TODO: Use ImmutableArray.
         {
             CalculateMatrixAndRHS();
-            var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy).vector;
+            var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy);
             
             int dim = rightHandSide.Length;
             var solution = new IFunction[dim];

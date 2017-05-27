@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using static System.Math;
+using static FEM_NET.Utils;
 
 namespace FEM_NET.FEM2D
 {
@@ -52,25 +53,6 @@ namespace FEM_NET.FEM2D
 
             StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);
-        }
-
-        private static Timer StartMeasuringTaskTime(string taskName)
-        {
-            var timer = new Timer(taskName);
-            timer.Start();
-            return timer;
-        }
-
-        private static void StopAndShowTaskTime(Timer timer)
-        {
-            timer.Stop();
-            Console.WriteLine($"{timer.Name} time: {timer.Elapsed.TotalSeconds:F3} sec");
-        }
-
-        private static void ShowMeshParameters(Mesh mesh)
-        {
-            Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
-            Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");
         }
     }
 }

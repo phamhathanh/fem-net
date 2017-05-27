@@ -38,7 +38,7 @@ namespace FEM_NET.FEM2D
 
             var previous = new IFunction[]
             {
-                new LambdaFunction(v => Sin(PI*v.x)*Sin(PI*v.y))
+                new LambdaFunction((x, y) => Sin(PI*x)*Sin(PI*y))
             };
             
             for (int i = 0; i < stepCount; i++)

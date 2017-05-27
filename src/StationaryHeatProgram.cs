@@ -24,22 +24,23 @@ namespace FEM_NET.FEM2D
                 throw new ArgumentException("Unknown or unimplemented finite element type.");
             var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
 
-            var conditions = new Dictionary<int, IFunction[]>()
+            var conditions = new Dictionary<int, IVectorField>()
             {
-                [1] = new[] { new LambdaFunction(v => 25) }
+                [1] = new LambdaVectorField(v => 25)
             };
             
             BilinearForm bilinearForm =
                 (u, v, du, dv) => Vector2.Dot(du[0], dv[0]);
-            var rhs = new[] { new LambdaFunction(v => -4) };
+            var rhs = new LambdaVectorField(v => -4);
+
             var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
-            var solution = poisson.Solve();
+            var solution = (FiniteElementVectorField)poisson.Solve();
             
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
             Func<Vector2, double> uExact = v => (v.x-0.5)*(v.x-0.5) + (v.y-0.5)*(v.y-0.5) - 0.25 + 25;
-            var error = CalculateError(feSpace, uExact, (FiniteElementFunction)solution[0]);
+            var error = CalculateError(feSpace, uExact, solution);
             Console.WriteLine($"L2 Error = {error}");
 
             StopAndShowTaskTime(errorCalculationTimer);
@@ -52,7 +53,7 @@ namespace FEM_NET.FEM2D
         }
 
         private static double CalculateError(IFiniteElementSpace feSpace,
-                        Func<Vector2, double> exactSolution, FiniteElementFunction solution)
+                        Func<Vector2, double> exactSolution, FiniteElementVectorField solution)
         {
             double squareError = 0;
             foreach (var element in feSpace.FiniteElements)
@@ -62,7 +63,7 @@ namespace FEM_NET.FEM2D
                     double u0 = exactSolution(v),
                         uh0 = 0;
                     foreach (var node in element.Nodes)
-                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex);
+                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex, 0);
                     return (u0 - uh0) * (u0 - uh0);
                 };
                 squareError += GaussianQuadrature.Integrate(error, element.Triangle);

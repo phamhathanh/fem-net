@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal interface IFunction
+    internal interface IScalarField
     {
         double GetValueAt(Vector2 point);
     }

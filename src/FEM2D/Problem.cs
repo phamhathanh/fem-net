@@ -9,50 +9,49 @@ namespace FEM_NET.FEM2D
         private const double VERY_LARGE_VALUE = 1e30;
 
         private readonly IFiniteElementSpace finiteElementSpace;
-        private readonly Dictionary<int, IFunction[]> boundaryConditions;
+        private readonly Dictionary<int, IVectorField> boundaryConditions;
         private readonly BilinearForm bilinearForm;
-        private readonly IFunction[] rightHandSide;
+        private readonly IVectorField rightHandSide;
         private readonly double accuracy;
 
         private Matrix A;
         private Vector rhs;
 
-        public Problem(IFiniteElementSpace finiteElementSpace, Dictionary<int, IFunction[]> boundaryConditions,
-                        BilinearForm bilinearForm, ICollection<IFunction> rightHandSide,
+        public Problem(IFiniteElementSpace finiteElementSpace,
+                        Dictionary<int, IVectorField> boundaryConditions,
+                        BilinearForm bilinearForm, IVectorField rightHandSide,
                         double accuracy)
-                        // TODO: use vector valued function instead of array of scalar
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
 
             this.bilinearForm = bilinearForm;
-            this.rightHandSide = rightHandSide.ToArray();
-            // TODO: Use ImmutableArray.
+            this.rightHandSide = rightHandSide;
 
             this.accuracy = accuracy;
         }
 
-        public IFunction[] Solve()
+        public IVectorField Solve()
         // TODO: Use ImmutableArray.
         {
             CalculateMatrixAndRHS();
             var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy);
             
-            int dim = rightHandSide.Length;
-            var solution = new IFunction[dim];
+            int dim = rightHandSide.Dimension;
+            var solution = new FiniteElementScalarField[dim];
             var m = finiteElementSpace.Vertices.Count;
             for (int n = 0; n < dim; n++)
             {
                 var values = rawSolution.Skip(n*m).Take(m);
-                solution[n] = new FiniteElementFunction(finiteElementSpace, values);
+                solution[n] = new FiniteElementScalarField(finiteElementSpace, values);
             }
-            return solution;
+            return new FiniteElementVectorField(solution);
         }
 
         private void CalculateMatrixAndRHS()
         {
             var vertexCount = finiteElementSpace.Vertices.Count;
-            int dim = rightHandSide.Length;
+            int dim = rightHandSide.Dimension;
             A = new Matrix(vertexCount*dim, vertexCount*dim);
             var rhs = new double[vertexCount*dim];
 
@@ -66,7 +65,7 @@ namespace FEM_NET.FEM2D
                     bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Reference);
                     if (isDirichletNode)
                     {
-                        var value = boundaryConditions[vertex.Reference][n].GetValueAt(vertex.Position);
+                        var value = boundaryConditions[vertex.Reference].GetValueAt(vertex.Position, n);
                         rhs[index] += VERY_LARGE_VALUE*value;
                         A[index, index] += VERY_LARGE_VALUE;
                     }
@@ -80,7 +79,7 @@ namespace FEM_NET.FEM2D
                     for (int n = 0; n < dim; n++)
                     {
                         int i = indexByVertex[n][node.Vertex];
-                        rhs[i] += GaussianQuadrature.Integrate(v => rightHandSide[n].GetValueAt(v) * node.Phi(v), finiteElement.Triangle);
+                        rhs[i] += GaussianQuadrature.Integrate(v => rightHandSide.GetValueAt(v, n) * node.Phi(v), finiteElement.Triangle);
                         foreach (var otherNode in finiteElement.Nodes)
                             for (int m = 0; m < dim; m++)
                             {

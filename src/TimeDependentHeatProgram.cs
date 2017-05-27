@@ -24,8 +24,8 @@ namespace FEM_NET.FEM2D
                 throw new ArgumentException("Unknown or unimplemented finite element type.");
             var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
 
-            var g = new[] { new LambdaFunction(v => 0) };
-            var conditions = new Dictionary<int, IFunction[]>()
+            var g = new LambdaVectorField(v => 0);
+            var conditions = new Dictionary<int, IVectorField>()
             {
                 [1] = g, [2] = g, [3] = g, [4] = g
             };
@@ -36,19 +36,13 @@ namespace FEM_NET.FEM2D
             BilinearForm bilinearForm =
                 (u, v, du, dv) => timeStep * Vector2.Dot(du[0], dv[0]) + u[0] * v[0];
 
-            var previous = new IFunction[]
-            {
-                new LambdaFunction((x, y) => Sin(PI*x)*Sin(PI*y))
-            };
+            IVectorField previous = new LambdaVectorField((x, y) => Sin(PI*x)*Sin(PI*y));
             
             for (int i = 0; i < stepCount; i++)
             {
                 t += timeStep;
                 Func<Vector2, double> f = v => (1 + 2*PI*PI)*Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
-                var rhs = new IFunction[]
-                {
-                    new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
-                };
+                var rhs = new LambdaVectorField(v => previous.GetValueAt(v, 0) + timeStep*f(v));
                 var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
                 previous = laplaceEquation.Solve();
             }
@@ -56,9 +50,9 @@ namespace FEM_NET.FEM2D
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
-            var solution = previous;
+            var solution = (FiniteElementVectorField)previous;
             Func<Vector2, double> uExact = v => Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
-            var error = CalculateError(feSpace, uExact, (FiniteElementFunction)solution[0]);
+            var error = CalculateError(feSpace, uExact, solution);
             Console.WriteLine($"L2 Error = {error}");
 
             StopAndShowTaskTime(errorCalculationTimer);
@@ -71,7 +65,7 @@ namespace FEM_NET.FEM2D
         }
 
         private static double CalculateError(IFiniteElementSpace feSpace,
-                        Func<Vector2, double> exactSolution, FiniteElementFunction solution)
+                        Func<Vector2, double> exactSolution, FiniteElementVectorField solution)
         {
             double squareError = 0;
             foreach (var element in feSpace.FiniteElements)
@@ -81,7 +75,7 @@ namespace FEM_NET.FEM2D
                     double u0 = exactSolution(v),
                         uh0 = 0;
                     foreach (var node in element.Nodes)
-                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex);
+                        uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex, 0);
                     return (u0 - uh0) * (u0 - uh0);
                 };
                 squareError += GaussianQuadrature.Integrate(error, element.Triangle);

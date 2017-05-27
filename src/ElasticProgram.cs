@@ -26,9 +26,9 @@ namespace FEM_NET.FEM2D
             var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
             // Some how doesn't work with P1.
 
-            var conditions = new Dictionary<int, IFunction[]>()
+            var conditions = new Dictionary<int, IVectorField>()
             {
-                [4] = new[] { new LambdaFunction(v => 0), new LambdaFunction(v => 0) }
+                [4] = new LambdaVectorField(v => 0, v => 0)
             };
 
             double YOUNG_MODULUS = 21e5, POISSON_RATIO = 0.28,
@@ -41,7 +41,8 @@ namespace FEM_NET.FEM2D
                                 + MU*0.5*(du[0].y + du[1].x)*(dv[0].y + dv[1].x)
                                 + MU*0.5*(du[0].x + du[1].y)*(dv[0].x + dv[1].y);
 
-            var rhs = new IFunction[] { new LambdaFunction(v => 0), new LambdaFunction(v => -1) };
+            var rhs = new LambdaVectorField(v => 0, v => -1);
+
             var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
             var solution = laplaceEquation.Solve();
             StopAndShowTaskTime(calculationTimer);

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace FEM_NET.FEM2D
 {
-    internal class FiniteElementFunction : IFunction
+    internal class FiniteElementScalarField : IScalarField
     {
         private readonly IFiniteElementSpace finiteElementSpace;
         private readonly Dictionary<Vertex, double> valueByVertex;
 
-        public FiniteElementFunction(IFiniteElementSpace finiteElementSpace, IEnumerable<double> values)
+        public FiniteElementScalarField(IFiniteElementSpace finiteElementSpace, IEnumerable<double> values)
         {
             this.finiteElementSpace = finiteElementSpace;
 

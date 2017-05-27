@@ -8,7 +8,7 @@ namespace FEM_NET
 {
     internal static class InOut
     {
-        public static void WriteSolutionToFile(string path, Mesh mesh, IFunction[] solution)
+        public static void WriteSolutionToFile(string path, Mesh mesh, IVectorField solution)
         {
             using (var writer = File.CreateText(path))
             {
@@ -19,12 +19,12 @@ Dimension 2
 
 SolAtVertices");
                 writer.WriteLine(mesh.Vertices.Count);
-                writer.WriteLine($"1 {solution.Length}");
+                writer.WriteLine($"1 {solution.Dimension}");
                 writer.WriteLine();
                 foreach (var vertex in mesh.Vertices)
                 {
-                    for (int i = 0; i < solution.Length; i++)
-                        writer.Write($"{solution[i].GetValueAt(vertex.Position)} ");
+                    for (int i = 0; i < solution.Dimension; i++)
+                        writer.Write($"{solution.GetValueAt(vertex.Position, i)} ");
                     writer.WriteLine();
                 }
                 writer.WriteLine();

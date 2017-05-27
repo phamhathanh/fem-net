@@ -40,7 +40,7 @@ namespace FEM_NET
                 using (var mirrorWriter = new MirrorWriter(stdWriter, fileWriter))
                 {
                     Console.SetOut(mirrorWriter);
-                    FEM2D.HeatProgram.Run(meshPath, feType, accuracy);
+                    FEM2D.TimeDependentHeatProgram.Run(meshPath, feType, accuracy);
                 }
                 
                 Console.SetOut(stdWriter);

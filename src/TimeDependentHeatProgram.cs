@@ -4,7 +4,7 @@ using static System.Math;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class HeatProgram
+    internal static class TimeDependentHeatProgram
     {
         public static void Run(string meshPath, string finiteElementType, double accuracy)
         {
@@ -24,21 +24,40 @@ namespace FEM_NET.FEM2D
                 throw new ArgumentException("Unknown or unimplemented finite element type.");
             var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
 
+            var g = new[] { new LambdaFunction(v => 0) };
             var conditions = new Dictionary<int, IFunction[]>()
             {
-                [1] = new[] { new LambdaFunction(v => 25) }
+                [1] = g, [2] = g, [3] = g, [4] = g
             };
             
+            int stepCount = 10;
+            double t = 0,
+                timeStep = 1.0 / stepCount;
             BilinearForm bilinearForm =
-                (u, v, du, dv) => Vector2.Dot(du[0], dv[0]);
-            var rhs = new[] { new LambdaFunction(v => -4) };
-            var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
-            var solution = poisson.Solve();
+                (u, v, du, dv) => timeStep * Vector2.Dot(du[0], dv[0]) + u[0] * v[0];
+
+            var previous = new IFunction[]
+            {
+                new LambdaFunction(v => Sin(PI*v.x)*Sin(PI*v.y))
+            };
+            
+            for (int i = 0; i < stepCount; i++)
+            {
+                t += timeStep;
+                Func<Vector2, double> f = v => (1 + 2*PI*PI)*Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
+                var rhs = new IFunction[]
+                {
+                    new LambdaFunction(v => previous[0].GetValueAt(v) + timeStep*f(v))
+                };
+                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+                previous = laplaceEquation.Solve();
+            }
             
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
-            Func<Vector2, double> uExact = v => (v.x-0.5)*(v.x-0.5) + (v.y-0.5)*(v.y-0.5) - 0.25 + 25;
+            var solution = previous;
+            Func<Vector2, double> uExact = v => Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
             var error = CalculateError(feSpace, uExact, (FiniteElementFunction)solution[0]);
             Console.WriteLine($"L2 Error = {error}");
 

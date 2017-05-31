@@ -36,11 +36,11 @@ namespace FEM_NET.FEM2D
                     var items = rawString.Split(' ');
                     double x = double.Parse(items[0]),
                         y = double.Parse(items[1]);
-                    int reference = int.Parse(items[2]);
+                    int label = int.Parse(items[2]);
                     // TODO: Format exception.
 
                     var position = new Vector2(x, y);
-                    vertices[i] = new Vertex(position, reference);
+                    vertices[i] = new Vertex(position, label);
                 }
 
                 do

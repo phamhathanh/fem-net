@@ -27,6 +27,12 @@ namespace FEM_NET.FEM2D
 
             this.bilinearForm = bilinearForm;
             this.rightHandSide = rightHandSide;
+            var dim = rightHandSide.Dimension;
+            var mismatch = boundaryConditions.Values
+                            .Any(condition => condition.Dimension != dim);
+            if (mismatch)
+                throw new ArgumentException("Dimension mismatched.");
+            // TODO: Validate bilinear form.
 
             this.accuracy = accuracy;
         }
@@ -61,10 +67,10 @@ namespace FEM_NET.FEM2D
                 indexByVertex[n] = new Dictionary<Vertex, int>(vertexCount);
                 foreach (var vertex in finiteElementSpace.Vertices)
                 {
-                    bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Reference);
+                    bool isDirichletNode = boundaryConditions.ContainsKey(vertex.Label);
                     if (isDirichletNode)
                     {
-                        var value = boundaryConditions[vertex.Reference].GetValueAt(vertex.Position, n);
+                        var value = boundaryConditions[vertex.Label].GetValueAt(vertex.Position, n);
                         rhs[index] += VERY_LARGE_VALUE*value;
                         A[index, index] += VERY_LARGE_VALUE;
                     }
@@ -95,6 +101,7 @@ namespace FEM_NET.FEM2D
                                         dv[m] = otherNode.GradPhi(p);
                                         return bilinearForm(u, v, du, dv);
                                     };
+                                    // TODO: Extract to bilinear form?
                                 var integral = GaussianQuadrature.Integrate(localBilinearForm, finiteElement.Triangle);
                                 A[i, j] += integral;
                                 // TODO: cache.

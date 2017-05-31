@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using FEM_NET.FEM2D;
 
@@ -42,6 +43,19 @@ namespace FEM_NET
         {
             Console.WriteLine($"Number of vertices: {mesh.Vertices.Count}");
             Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");
+        }
+
+        public static FiniteElementSpaceFactory GetFESpaceFactory(string name)
+        {
+            switch (name)
+            {
+                case "p1":
+                    return P1Space.Create;
+                case "p1b":
+                    return P1bSpace.Create;
+                default:
+                    throw new ArgumentException("Unknown or unimplemented finite element type.");
+            }
         }
     }
 }

@@ -18,13 +18,7 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpaceFactoryByName = new Dictionary<string, FiniteElementSpaceFactory>() {
-                ["p1"] = P1Space.Create,
-                ["p1b"] = P1bSpace.Create };
-            if (!feSpaceFactoryByName.ContainsKey(finiteElementType))
-                throw new ArgumentException("Unknown or unimplemented finite element type.");
-            var feSpace = feSpaceFactoryByName[finiteElementType](mesh);
-
+            var feSpace = GetFESpaceFactory(finiteElementType)(mesh);
             var g = new LambdaVectorField(v => 0);
             var conditions = new Dictionary<int, IVectorField>()
             {

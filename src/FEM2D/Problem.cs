@@ -32,7 +32,6 @@ namespace FEM_NET.FEM2D
         }
 
         public IVectorField Solve()
-        // TODO: Use ImmutableArray.
         {
             CalculateMatrixAndRHS();
             var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy);

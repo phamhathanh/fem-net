@@ -18,14 +18,14 @@ namespace FEM_NET.FEM2D
             this.components = scalarFields.ToArray();
         }
 
-        public LambdaVectorField(Func<Vector2, double> function)
+        public LambdaVectorField(params Func<double, double, double>[] components)
         {
-            this.components = new[] { new LambdaScalarField(function) };
+            if (components.Length == 0)
+                throw new ArgumentException("There must be at least one component.");
+            var scalarFields = from component in components
+                               select new LambdaScalarField(component);
+            this.components = scalarFields.ToArray();
         }
-
-        public LambdaVectorField(Func<double, double, double> function)
-            : this(v => function(v.x, v.y))
-        { }
 
         public double GetValueAt(Vector2 point, int component)
             => components[component].GetValueAt(point);

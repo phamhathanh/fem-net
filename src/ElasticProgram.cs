@@ -49,7 +49,7 @@ namespace FEM_NET.FEM2D
             StopAndShowTaskTime(calculationTimer);
             
             var outputTimer = StartMeasuringTaskTime("Output");
-            InOut.WriteSolutionToFile($"{meshPath}.sol", mesh, solution);
+            InOut.WriteSolutionToFile($"{meshPath}.sol", mesh, (FiniteElementVectorField)solution);
 
             StopAndShowTaskTime(outputTimer);
             StopAndShowTaskTime(totalTimer);

@@ -27,9 +27,6 @@ namespace FEM_NET.FEM2D
             Vertices = vertices.AsReadOnly();
             FiniteElements = finiteElements.AsReadOnly();
         }
-
-        public static P1bSpace Create(Mesh mesh)
-            => new P1bSpace(mesh);
     }
 
     internal sealed class P1bElement : IFiniteElement

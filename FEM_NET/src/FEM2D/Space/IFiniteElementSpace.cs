@@ -7,6 +7,4 @@ namespace FEM_NET.FEM2D
         IReadOnlyCollection<Vertex> Vertices { get; }
         IReadOnlyCollection<IFiniteElement> FiniteElements { get; }
     }
-
-    internal delegate IFiniteElementSpace FiniteElementSpaceFactory(Mesh mesh);
 }

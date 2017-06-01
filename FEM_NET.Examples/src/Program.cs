@@ -13,8 +13,7 @@ namespace FEM_NET
             var app = new CommandLineApplication();
             app.Name = "femnet";
             app.HelpOption("-?|-h|--help");
-
-            // TODO: Extract library.
+            
             // TODO: Move each program into its own command.
 
             var meshArg = app.Argument("mesh", "Path to the mesh");

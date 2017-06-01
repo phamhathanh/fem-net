@@ -24,8 +24,8 @@ namespace FEM_NET.FEM2D
                 [1] = new LambdaVectorField(v => 25)
             };
             
-            BilinearForm bilinearForm =
-                (u, v, du, dv) => Vector2.Dot(du[0], dv[0]);
+            var bilinearForm = new BilinearForm(
+                (u, v, du, dv) => Vector2.Dot(du, dv));
             var rhs = new LambdaVectorField(v => -4);
 
             var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);

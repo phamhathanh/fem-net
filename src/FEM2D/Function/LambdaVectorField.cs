@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal class LambdaVectorField : IVectorField
+    public class LambdaVectorField : IVectorField
     {
         private readonly IScalarField[] components;
 

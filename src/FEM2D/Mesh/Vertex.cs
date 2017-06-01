@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal class Vertex
+    public class Vertex
     {
         public Vector2 Position { get; }
         public int Label { get; }

@@ -3,13 +3,16 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal class FiniteElementVectorField : IVectorField
+    public class FiniteElementVectorField : IVectorField
     {
         private readonly FiniteElementScalarField[] components;
 
         public int Dimension => components.Length;
 
-        public FiniteElementVectorField(params FiniteElementScalarField[] components)
+        internal FiniteElementVectorField(params FiniteElementScalarField[] components)
+        // Public class internal constructor?
+        // TODO: overload this
+        // IFiniteElementSpace finiteElementSpace, IEnumerable<double> values
         {
             if (components.Length == 0)
                 throw new ArgumentException("There must be at least one component.");

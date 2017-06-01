@@ -20,7 +20,7 @@ namespace FEM_NET.FEM2D
         public Problem(IFiniteElementSpace finiteElementSpace,
                         Dictionary<int, IVectorField> boundaryConditions,
                         BilinearForm bilinearForm, IVectorField rightHandSide,
-                        double accuracy)
+                        double accuracy = 1e-6)
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
@@ -99,7 +99,7 @@ namespace FEM_NET.FEM2D
                                         var dv = new Vector2[dim];
                                         du[n] = node.GradPhi(p);
                                         dv[m] = otherNode.GradPhi(p);
-                                        return bilinearForm(u, v, du, dv);
+                                        return bilinearForm.Evaluate(u, v, du, dv);
                                     };
                                     // TODO: Extract to bilinear form?
                                 var integral = GaussianQuadrature.Integrate(localBilinearForm, finiteElement.Triangle);

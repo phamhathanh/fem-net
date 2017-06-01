@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal sealed class Mesh
+    public sealed class Mesh
     {
         public IReadOnlyCollection<Vertex> Vertices { get; }
         public IReadOnlyCollection<Triangle> Triangles { get; }

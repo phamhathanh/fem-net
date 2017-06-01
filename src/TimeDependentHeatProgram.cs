@@ -28,8 +28,8 @@ namespace FEM_NET.FEM2D
             int stepCount = 10;
             double t = 0,
                 timeStep = 1.0 / stepCount;
-            BilinearForm bilinearForm =
-                (u, v, du, dv) => timeStep * Vector2.Dot(du[0], dv[0]) + u[0] * v[0];
+            var bilinearForm = new BilinearForm(
+                (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + u*v);
 
             IVectorField previous = new LambdaVectorField((x, y) => Sin(PI*x)*Sin(PI*y));
             

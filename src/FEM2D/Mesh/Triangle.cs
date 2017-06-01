@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal class Triangle
+    public class Triangle
     {
         private double? area;
         public Vertex Vertex0 { get; }

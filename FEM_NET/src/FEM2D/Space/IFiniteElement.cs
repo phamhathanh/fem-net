@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace FEM_NET.FEM2D
 {
-    internal interface IFiniteElement
+    public interface IFiniteElement
     {
         ReadOnlyCollection<INode> Nodes { get; }
         Triangle Triangle { get; }
@@ -11,7 +11,7 @@ namespace FEM_NET.FEM2D
         bool Contains(Vector2 point);
     }
 
-    internal interface INode
+    public interface INode
     {
         Vertex Vertex { get; }
         Func<Vector2, double> Phi { get; }

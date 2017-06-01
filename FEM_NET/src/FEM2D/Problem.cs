@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal class Problem
+    public class Problem
     {
         private const double VERY_LARGE_VALUE = 1e30;
 

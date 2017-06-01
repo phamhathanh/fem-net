@@ -2,7 +2,7 @@
 
 namespace FEM_NET.FEM2D
 {
-    internal interface IFiniteElementSpace
+    public interface IFiniteElementSpace
     {
         IReadOnlyCollection<Vertex> Vertices { get; }
         IReadOnlyCollection<IFiniteElement> FiniteElements { get; }

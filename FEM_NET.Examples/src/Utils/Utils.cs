@@ -45,14 +45,14 @@ namespace FEM_NET
             Console.WriteLine($"Number of finite elements: {mesh.Triangles.Count}");
         }
 
-        public static FiniteElementSpaceFactory GetFESpaceFactory(string name)
+        public static IFiniteElementSpace CreateFiniteElementSpace(string elementType, Mesh mesh)
         {
-            switch (name)
+            switch (elementType)
             {
                 case "p1":
-                    return P1Space.Create;
+                    return new P1Space(mesh);
                 case "p1b":
-                    return P1bSpace.Create;
+                    return new P1bSpace(mesh);
                 default:
                     throw new ArgumentException("Unknown or unimplemented finite element type.");
             }

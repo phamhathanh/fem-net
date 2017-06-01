@@ -14,6 +14,9 @@ namespace FEM_NET
             app.Name = "femnet";
             app.HelpOption("-?|-h|--help");
 
+            // TODO: Extract library.
+            // TODO: Move each program into its own command.
+
             var meshArg = app.Argument("mesh", "Path to the mesh");
 
             var elementTypeOption = app.Option("-e|--element-type", "Finite element type", CommandOptionType.SingleValue);
@@ -40,7 +43,7 @@ namespace FEM_NET
                 using (var mirrorWriter = new MirrorWriter(stdWriter, fileWriter))
                 {
                     Console.SetOut(mirrorWriter);
-                    FEM2D.TimeDependentHeatProgram.Run(meshPath, feType, accuracy);
+                    FEM2D.StationaryHeatProgram.Run(meshPath, feType, accuracy);
                 }
                 
                 Console.SetOut(stdWriter);

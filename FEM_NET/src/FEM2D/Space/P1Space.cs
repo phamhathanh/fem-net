@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FEM_NET.FEM2D
 {
-    internal sealed class P1Space : IFiniteElementSpace
+    public sealed class P1Space : IFiniteElementSpace
     {
         public IReadOnlyCollection<Vertex> Vertices { get; }
         public IReadOnlyCollection<IFiniteElement> FiniteElements { get; }

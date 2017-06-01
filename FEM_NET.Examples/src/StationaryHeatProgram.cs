@@ -5,7 +5,7 @@ using static FEM_NET.Utils;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class TimeDependentHeatProgram
+    internal static class StationaryHeatProgram
     {
         public static void Run(string meshPath, string finiteElementType, double accuracy)
         {
@@ -18,35 +18,23 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpace = GetFESpaceFactory(finiteElementType)(mesh);
-            var g = new LambdaVectorField(v => 0);
+            var feSpace = CreateFiniteElementSpace(finiteElementType, mesh);
             var conditions = new Dictionary<int, IVectorField>()
             {
-                [1] = g, [2] = g, [3] = g, [4] = g
+                [1] = new LambdaVectorField(v => 25)
             };
             
-            int stepCount = 10;
-            double t = 0,
-                timeStep = 1.0 / stepCount;
             var bilinearForm = new BilinearForm(
-                (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + u*v);
+                (u, v, du, dv) => Vector2.Dot(du, dv));
+            var rhs = new LambdaVectorField(v => -4);
 
-            IVectorField previous = new LambdaVectorField((x, y) => Sin(PI*x)*Sin(PI*y));
-            
-            for (int i = 0; i < stepCount; i++)
-            {
-                t += timeStep;
-                Func<Vector2, double> f = v => (1 + 2*PI*PI)*Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
-                var rhs = new LambdaVectorField(v => previous.GetValueAt(v, 0) + timeStep*f(v));
-                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
-                previous = laplaceEquation.Solve();
-            }
+            var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+            var solution = (FiniteElementVectorField)poisson.Solve();
             
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
-            var solution = (FiniteElementVectorField)previous;
-            Func<Vector2, double> uExact = v => Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
+            Func<Vector2, double> uExact = v => (v.x-0.5)*(v.x-0.5) + (v.y-0.5)*(v.y-0.5) - 0.25 + 25;
             var error = CalculateError(feSpace, uExact, solution);
             Console.WriteLine($"L2 Error = {error}");
 

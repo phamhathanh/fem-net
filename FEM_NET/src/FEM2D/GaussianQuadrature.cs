@@ -3,7 +3,7 @@ using System;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class GaussianQuadrature
+    public static class GaussianQuadrature
     {
         public static double Integrate(Func<Vector2, double> function, Triangle triangle)
         {

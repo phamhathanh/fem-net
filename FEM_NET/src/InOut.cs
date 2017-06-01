@@ -6,7 +6,7 @@ using FEM_NET.FEM2D;
 
 namespace FEM_NET
 {
-    internal static class InOut
+    public static class InOut
     {
         public static void WriteSolutionToFile(string path, Mesh mesh, FiniteElementVectorField solution)
         {

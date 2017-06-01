@@ -19,7 +19,7 @@ namespace FEM_NET.FEM2D
 
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
-            var feSpace = GetFESpaceFactory(finiteElementType)(mesh);
+            var feSpace = CreateFiniteElementSpace(finiteElementType, mesh);
             var conditions = new Dictionary<int, IVectorField>()
             {
                 [4] = new LambdaVectorField(v => 0, v => 0)

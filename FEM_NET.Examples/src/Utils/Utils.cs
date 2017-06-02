@@ -8,14 +8,14 @@ namespace FEM_NET
     internal static class Utils
     {
         public static double CalculateError(IFiniteElementSpace feSpace,
-                        Func<Vector2, double> exactSolution, FiniteElementVectorField solution)
+                        Func<double, double, double> exactSolution, FiniteElementVectorField solution)
         {
             double squareError = 0;
             foreach (var element in feSpace.FiniteElements)
             {
                 Func<Vector2, double> error = v =>
                 {
-                    double u0 = exactSolution(v),
+                    double u0 = exactSolution(v.x, v.y),
                         uh0 = 0;
                     foreach (var node in element.Nodes)
                         uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex, 0);

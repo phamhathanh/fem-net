@@ -5,7 +5,7 @@ using static FEM_NET.Utils;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class StationaryHeatProgram
+    internal static class SquareStationaryHeatProgram
     {
         public static void Run(string meshPath, string finiteElementType, double accuracy)
         {
@@ -19,14 +19,15 @@ namespace FEM_NET.FEM2D
             var calculationTimer = StartMeasuringTaskTime("Calculation");
 
             var feSpace = CreateFiniteElementSpace(finiteElementType, mesh);
+            var g = new LambdaVectorField(v => 0);
             var conditions = new Dictionary<int, IVectorField>()
             {
-                [1] = new LambdaVectorField(v => 25)
+                [1] = g, [2] = g, [3] = g, [4] = g
             };
             
             var bilinearForm = new BilinearForm(
-                (u, v, du, dv) => Vector2.Dot(du, dv));
-            var rhs = new LambdaVectorField(v => -4);
+                (u, v, du, dv) => Vector2.Dot(du, dv) + u*v);
+            var rhs = new LambdaVectorField((x, y) => (1 + 2*PI*PI)*Sin(PI*x)*Sin(PI*y));
 
             var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
             var solution = (FiniteElementVectorField)poisson.Solve();
@@ -34,7 +35,7 @@ namespace FEM_NET.FEM2D
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
-            Func<double, double, double> uExact = (x, y) => (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) - 0.25 + 25;
+            Func<double, double, double> uExact = (x, y) => Sin(PI*x)*Sin(PI*y);
             var error = CalculateError(feSpace, uExact, solution);
             Console.WriteLine($"L2 Error = {error}");
 

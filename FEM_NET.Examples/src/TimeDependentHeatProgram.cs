@@ -46,7 +46,7 @@ namespace FEM_NET.FEM2D
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");
 
             var solution = (FiniteElementVectorField)previous;
-            Func<Vector2, double> uExact = v => Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
+            Func<double, double, double> uExact = (x, y) => Exp(t)*Sin(PI*x)*Sin(PI*y);
             var error = CalculateError(feSpace, uExact, solution);
             Console.WriteLine($"L2 Error = {error}");
 

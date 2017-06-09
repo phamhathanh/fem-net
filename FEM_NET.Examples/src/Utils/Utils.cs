@@ -7,6 +7,8 @@ namespace FEM_NET
 {
     internal static class Utils
     {
+        private static readonly IQuadrature quadrature = new GaussianQuadrature();
+
         public static double CalculateError(IFiniteElementSpace feSpace,
                         Func<double, double, double> exactSolution, FiniteElementVectorField solution)
         {
@@ -21,7 +23,7 @@ namespace FEM_NET
                         uh0 += node.Phi(v) * solution.GetValueAt(node.Vertex, 0);
                     return (u0 - uh0) * (u0 - uh0);
                 };
-                squareError += GaussianQuadrature.Integrate(error, element.Triangle);
+                squareError += quadrature.Integrate(error, element.Triangle);
             }
             return Math.Sqrt(squareError);
         }

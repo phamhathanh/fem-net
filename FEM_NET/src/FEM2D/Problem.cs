@@ -13,6 +13,7 @@ namespace FEM_NET.FEM2D
         private readonly BilinearForm bilinearForm;
         private readonly IVectorField rightHandSide;
         private readonly ISolver solver;
+        private readonly IQuadrature quadrature;
 
         private Matrix A;
         private Vector rhs;
@@ -20,7 +21,7 @@ namespace FEM_NET.FEM2D
         public Problem(IFiniteElementSpace finiteElementSpace,
                         Dictionary<int, IVectorField> boundaryConditions,
                         BilinearForm bilinearForm, IVectorField rightHandSide,
-                        ISolver solver = null)
+                        ISolver solver = null, IQuadrature quadrature = null)
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
@@ -35,6 +36,7 @@ namespace FEM_NET.FEM2D
             // TODO: Validate bilinear form.
 
             this.solver = solver ?? new ConjugateGradient(1e-6);
+            this.quadrature = quadrature ?? new GaussianQuadrature();
         }
 
         public IVectorField Solve()
@@ -84,7 +86,7 @@ namespace FEM_NET.FEM2D
                     for (int n = 0; n < dim; n++)
                     {
                         int i = indexByVertex[n][node.Vertex];
-                        rhs[i] += GaussianQuadrature.Integrate(v => rightHandSide.GetValueAt(v, n) * node.Phi(v), finiteElement.Triangle);
+                        rhs[i] += quadrature.Integrate(v => rightHandSide.GetValueAt(v, n) * node.Phi(v), finiteElement.Triangle);
                         foreach (var otherNode in finiteElement.Nodes)
                             for (int m = 0; m < dim; m++)
                             {
@@ -102,7 +104,7 @@ namespace FEM_NET.FEM2D
                                         return bilinearForm.Evaluate(u, v, du, dv);
                                     };
                                     // TODO: Extract to bilinear form?
-                                var integral = GaussianQuadrature.Integrate(localBilinearForm, finiteElement.Triangle);
+                                var integral = quadrature.Integrate(localBilinearForm, finiteElement.Triangle);
                                 A[i, j] += integral;
                                 // TODO: cache.
                             }

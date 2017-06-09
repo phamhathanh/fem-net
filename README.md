@@ -4,8 +4,9 @@ FEM.NET is a Finite Element Method library for .NET framework.
 
 ### Installation
 
-* Install [.NET Core](https://www.microsoft.com/net/core).
+* Install [.NET Core](https://www.microsoft.com/net/core)
 * Clone the sources: `git clone https://github.com/phamhathanh/fem-net.git`
+* Navigate to the source folder: `cd fem-net`
 * Restore dependencies: `dotnet restore`
 
 ### Run the example

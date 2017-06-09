@@ -14,11 +14,7 @@ namespace FEM_NET.FEM2D
             get
             {
                 if (!area.HasValue)
-                {
-                    Vector2 u = Vertex1.Position - Vertex0.Position,
-                            v = Vertex2.Position - Vertex0.Position;
-                    area = Math.Abs(u.x * v.y - u.y * v.x) / 2;
-                }
+                    area = CalculateArea();
                 return area.Value;
             }
         }
@@ -28,6 +24,13 @@ namespace FEM_NET.FEM2D
             Vertex0 = vertex0;
             Vertex1 = vertex1;
             Vertex2 = vertex2;
+        }
+
+        private double CalculateArea()
+        {
+            Vector2 u = Vertex1.Position - Vertex0.Position,
+                    v = Vertex2.Position - Vertex0.Position;
+            return Math.Abs(u.x * v.y - u.y * v.x) / 2;
         }
     }
 }

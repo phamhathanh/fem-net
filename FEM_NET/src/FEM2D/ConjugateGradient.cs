@@ -32,7 +32,6 @@ namespace FEM_NET.FEM2D
                     Console.WriteLine($"CG error = {rho}");
                     return u;
                 }
-
                 p = r + (rho / oldRho) * p;
             }
             throw new ArgumentException($"Diverged: Error = {rho}");

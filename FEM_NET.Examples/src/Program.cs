@@ -10,21 +10,19 @@ namespace FEM_NET
     {
         private static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false);
             app.Name = "femnet";
             app.HelpOption("-?|-h|--help");
-            
-            // TODO: Move each program into its own command.
 
-            var meshArg = app.Argument("mesh", "Path to the mesh");
+            var meshArg = app.Argument("mesh", "Path to the mesh file");
 
-            var elementTypeOption = app.Option("-e|--element-type", "Finite element type", CommandOptionType.SingleValue);
-            var accuracyOption = app.Option("-a|--accuracy", "Accuracy of CG method", CommandOptionType.SingleValue);
-            
+            var elementTypeOption = app.Option("-e|--element-type", "Finite element type (default: P1)", CommandOptionType.SingleValue);
+            var accuracyOption = app.Option("-a|--accuracy", "Accuracy of CG method (default: 1e-6)", CommandOptionType.SingleValue);
+
             app.OnExecute(() => {
                 if (meshArg.Value == null)
                 {
-                    Console.WriteLine("ERROR: Missing mesh.");
+                    Console.WriteLine("ERROR: Missing path to the mesh file.");
                     return 1;
                 }
                 var meshPath = meshArg.Value;
@@ -42,7 +40,7 @@ namespace FEM_NET
                 using (var mirrorWriter = new MirrorWriter(stdWriter, fileWriter))
                 {
                     Console.SetOut(mirrorWriter);
-                    FEM2D.TimeDependentHeatProgram.Run(meshPath, feType, accuracy);
+                    FEM2D.HomogeneousStationaryHeatProgram.Run(meshPath, feType, accuracy);
                 }
                 
                 Console.SetOut(stdWriter);

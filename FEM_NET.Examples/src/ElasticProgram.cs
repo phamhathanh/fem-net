@@ -30,10 +30,10 @@ namespace FEM_NET.FEM2D
                 LAMBDA = YOUNG_MODULUS*POISSON_RATIO/((1+POISSON_RATIO)*(1-2*POISSON_RATIO));
             var bilinearForm = new BilinearForm(
                 (u, v, du, dv) => LAMBDA*(du[0].x + du[1].y)*(dv[0].x + dv[1].y)
-                                //+ MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y + (du[0].y+du[1].x)*(dv[0].y+dv[1].x))
-                                + MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y)
+                                + MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y + (du[0].y+du[1].x)*(dv[0].y+dv[1].x))
+                                /*+ MU*(2*du[0].x*dv[0].x + 2*du[1].y*dv[1].y)
                                 + MU*0.5*(du[0].y + du[1].x)*(dv[0].y + dv[1].x)
-                                + MU*0.5*(du[0].x + du[1].y)*(dv[0].x + dv[1].y));
+                                + MU*0.5*(du[0].x + du[1].y)*(dv[0].x + dv[1].y)*/);
 
             var rhs = new LambdaVectorField(v => 0, v => -1);
 

@@ -5,7 +5,7 @@ using static FEM_NET.Utils;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class SquareStationaryHeatProgram
+    internal static class HomogeneousStationaryHeatProgram
     {
         public static void Run(string meshPath, string finiteElementType, double accuracy)
         {

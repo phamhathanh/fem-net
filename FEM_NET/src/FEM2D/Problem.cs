@@ -12,7 +12,7 @@ namespace FEM_NET.FEM2D
         private readonly Dictionary<int, IVectorField> boundaryConditions;
         private readonly BilinearForm bilinearForm;
         private readonly IVectorField rightHandSide;
-        private readonly double accuracy;
+        private readonly ISolver solver;
 
         private Matrix A;
         private Vector rhs;
@@ -20,7 +20,7 @@ namespace FEM_NET.FEM2D
         public Problem(IFiniteElementSpace finiteElementSpace,
                         Dictionary<int, IVectorField> boundaryConditions,
                         BilinearForm bilinearForm, IVectorField rightHandSide,
-                        double accuracy = 1e-6)
+                        ISolver solver = null)
         {
             this.finiteElementSpace = finiteElementSpace;
             this.boundaryConditions = boundaryConditions;
@@ -34,13 +34,13 @@ namespace FEM_NET.FEM2D
                 throw new ArgumentException("Dimension mismatched.");
             // TODO: Validate bilinear form.
 
-            this.accuracy = accuracy;
+            this.solver = solver ?? new ConjugateGradient(1e-6);
         }
 
         public IVectorField Solve()
         {
             CalculateMatrixAndRHS();
-            var rawSolution = ConjugateGradient.Solve(A, rhs, accuracy);
+            var rawSolution = solver.Solve(A, rhs);
             
             int dim = rightHandSide.Dimension;
             var solution = new FiniteElementScalarField[dim];

@@ -5,14 +5,22 @@ using System.Linq;
 
 namespace FEM_NET
 {
-    internal sealed class Vector : IEnumerable<double>
+    public sealed class Vector : IEnumerable<double>
     {
         private readonly double[] elements;
         private double? norm;
 
         public int Length => elements.Length;
-        public double Norm => GetNorm();
         public double this[int index] => elements[index];
+        public double Norm
+        {
+            get
+            {
+                if (!norm.HasValue)
+                    norm = CalculateNorm();
+                return norm.Value;
+            }
+        }
 
         public Vector(IEnumerable<double> elements)
         {
@@ -23,16 +31,12 @@ namespace FEM_NET
             this.norm = null;
         }
 
-        private double GetNorm()
+        private double CalculateNorm()
         {
-            if (!norm.HasValue)
-            {
-                double squareNorm = 0;
-                foreach (var item in elements)
-                    squareNorm += item * item;
-                norm = Math.Sqrt(squareNorm);
-            }
-            return norm.Value;
+            double squareNorm = 0;
+            foreach (var item in elements)
+                squareNorm += item * item;
+            return Math.Sqrt(squareNorm);
         }
 
         public static Vector operator +(Vector vector1, Vector vector2)

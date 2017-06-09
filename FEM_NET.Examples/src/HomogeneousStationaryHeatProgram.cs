@@ -28,8 +28,10 @@ namespace FEM_NET.FEM2D
             var bilinearForm = new BilinearForm(
                 (u, v, du, dv) => Vector2.Dot(du, dv) + u*v);
             var rhs = new LambdaVectorField((x, y) => (1 + 2*PI*PI)*Sin(PI*x)*Sin(PI*y));
+            
+            var solver = new ConjugateGradient(accuracy);
 
-            var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+            var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, solver);
             var solution = (FiniteElementVectorField)poisson.Solve();
             
             StopAndShowTaskTime(calculationTimer);

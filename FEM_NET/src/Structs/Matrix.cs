@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FEM_NET
 {
-    internal class Matrix
+    public class Matrix
     {
         private readonly Dictionary<int, Dictionary<int, double>> rows;
 

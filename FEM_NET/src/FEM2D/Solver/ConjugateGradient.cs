@@ -3,28 +3,35 @@ using System;
 
 namespace FEM_NET.FEM2D
 {
-    internal static class ConjugateGradient
+    public class ConjugateGradient : ISolver
     {
-        public static Vector Solve(Matrix A, Vector F, double epsilon)
+        private readonly double epsilon;
+
+        public ConjugateGradient(double accuracy)
         {
-            int n = F.Length;
+            epsilon = accuracy;
+        }
+
+        public Vector Solve(Matrix matrix, Vector rightHandSide)
+        {
+            int n = rightHandSide.Length;
 
             var u = new Vector(new double[n]);
-            var r = A * u - F;
+            var r = matrix * u - rightHandSide;
             var p = 1 * r;
             // For deep copying.
             
             double oldRho,
-                rho = Vector.Dot(r, r);
+                rho = r.Norm*r.Norm;
 
             for (int i = 0; i < n; i++)
             {
-                var s = A * p;
+                var s = matrix * p;
                 var alpha = rho / Vector.Dot(s, p);
                 u -= alpha * p;
                 r -= alpha * s;
                 oldRho = rho;
-                rho = Vector.Dot(r, r);
+                rho = r.Norm*r.Norm;
 
                 if (rho < epsilon)
                 {
@@ -32,7 +39,7 @@ namespace FEM_NET.FEM2D
                     Console.WriteLine($"CG error = {rho}");
                     return u;
                 }
-                p = r + (rho / oldRho) * p;
+                p = r + (rho/oldRho) * p;
             }
             throw new ArgumentException($"Diverged: Error = {rho}");
         }

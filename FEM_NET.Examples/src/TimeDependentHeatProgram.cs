@@ -30,6 +30,7 @@ namespace FEM_NET.FEM2D
                 timeStep = 1.0 / stepCount;
             var bilinearForm = new BilinearForm(
                 (u, v, du, dv) => timeStep * Vector2.Dot(du, dv) + u*v);
+            var solver = new ConjugateGradient(accuracy);
 
             IVectorField previous = new LambdaVectorField((x, y) => Sin(PI*x)*Sin(PI*y));
             
@@ -38,7 +39,7 @@ namespace FEM_NET.FEM2D
                 t += timeStep;
                 Func<Vector2, double> f = v => (1 + 2*PI*PI)*Exp(t)*Sin(PI*v.x)*Sin(PI*v.y);
                 var rhs = new LambdaVectorField(v => previous.GetValueAt(v, 0) + timeStep*f(v));
-                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, accuracy);
+                var laplaceEquation = new Problem(feSpace, conditions, bilinearForm, rhs, solver);
                 previous = laplaceEquation.Solve();
             }
             

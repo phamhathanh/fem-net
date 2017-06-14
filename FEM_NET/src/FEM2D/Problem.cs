@@ -39,7 +39,7 @@ namespace FEM_NET.FEM2D
             this.quadrature = quadrature ?? new GaussianQuadrature();
         }
 
-        public IVectorField Solve()
+        public FiniteElementVectorField Solve()
         {
             CalculateMatrixAndRHS();
             var rawSolution = solver.Solve(A, rhs);

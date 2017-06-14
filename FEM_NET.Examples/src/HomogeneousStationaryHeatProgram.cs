@@ -32,7 +32,7 @@ namespace FEM_NET.FEM2D
             var solver = new ConjugateGradient(accuracy);
 
             var poisson = new Problem(feSpace, conditions, bilinearForm, rhs, solver);
-            var solution = (FiniteElementVectorField)poisson.Solve();
+            var solution = poisson.Solve();
             
             StopAndShowTaskTime(calculationTimer);
             var errorCalculationTimer = StartMeasuringTaskTime("Error calculation");

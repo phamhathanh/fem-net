@@ -9,7 +9,7 @@ namespace FEM_NET.FEM2D
 
         public ConjugateGradient(double accuracy)
         {
-            epsilon = accuracy;
+            epsilon = accuracy*accuracy;
         }
 
         public Vector Solve(Matrix matrix, Vector rightHandSide)
@@ -36,12 +36,12 @@ namespace FEM_NET.FEM2D
                 if (rho < epsilon)
                 {
                     i++;
-                    Console.WriteLine($"CG error = {rho}");
+                    Console.WriteLine($"CG error = {Math.Sqrt(rho)}");
                     return u;
                 }
                 p = r + (rho/oldRho) * p;
             }
-            throw new ArgumentException($"Diverged: Error = {rho}");
+            throw new ArgumentException($"Diverged: Error = {Math.Sqrt(rho)}");
         }
     }
 }

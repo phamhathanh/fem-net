@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace FEM_NET
+namespace FEM_NET.Examples
 {
     internal static class Program
     {
@@ -40,7 +40,7 @@ namespace FEM_NET
                 using (var mirrorWriter = new MirrorWriter(stdWriter, fileWriter))
                 {
                     Console.SetOut(mirrorWriter);
-                    FEM2D.HomogeneousStationaryHeatProgram.Run(meshPath, feType, accuracy);
+                    HomogeneousStationaryHeatProgram.Run(meshPath, feType, accuracy);
                 }
                 
                 Console.SetOut(stdWriter);

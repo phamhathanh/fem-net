@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using FEM_NET.FEM2D;
 using static System.Math;
-using static FEM_NET.Utils;
+using static FEM_NET.Examples.Utils;
 
-namespace FEM_NET.FEM2D
+namespace FEM_NET.Examples
 {
     internal static class NonhomogeneousStationaryHeatProgram
     {

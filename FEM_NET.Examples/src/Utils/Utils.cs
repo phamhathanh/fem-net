@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using FEM_NET.FEM2D;
 
-namespace FEM_NET
+namespace FEM_NET.Examples
 {
     internal static class Utils
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace FEM_NET
+namespace FEM_NET.Examples
 {
     internal class Timer
     {

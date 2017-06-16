@@ -3,30 +3,33 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-internal class MirrorWriter : TextWriter
+namespace FEM_NET.Examples
 {
-    private readonly IEnumerable<TextWriter> writers;
-
-    public override Encoding Encoding { get; }
-
-    public MirrorWriter(params TextWriter[] writers)
+    internal class MirrorWriter : TextWriter
     {
-        if (writers.Length == 0)
-            throw new ArgumentException("There must be at least one writer.");
-        this.writers = writers;
+        private readonly IEnumerable<TextWriter> writers;
 
-        Encoding = writers[0].Encoding;
-    }
+        public override Encoding Encoding { get; }
 
-    public override void Write(char value)
-    {
-        foreach (var writer in writers)
-            writer.Write(value);
-    }
+        public MirrorWriter(params TextWriter[] writers)
+        {
+            if (writers.Length == 0)
+                throw new ArgumentException("There must be at least one writer.");
+            this.writers = writers;
 
-    public override void Flush()
-    {
-        foreach (var writer in writers)
-            writer.Flush();
+            Encoding = writers[0].Encoding;
+        }
+
+        public override void Write(char value)
+        {
+            foreach (var writer in writers)
+                writer.Write(value);
+        }
+
+        public override void Flush()
+        {
+            foreach (var writer in writers)
+                writer.Flush();
+        }
     }
 }
